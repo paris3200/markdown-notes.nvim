@@ -48,7 +48,7 @@ function M.find_notes()
   fzf.files({
     prompt = "Find Notes> ",
     cwd = vim.fn.expand(config.options.vault_path),
-    cmd = "find . -name '*.md' -type f -not -path '*/.*'",
+    cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
   })
 end
 
@@ -72,10 +72,87 @@ function M.search_tags()
     return
   end
   
-  fzf.grep({
+  local vault_path = vim.fn.expand(config.options.vault_path)
+  
+  -- Get all markdown files
+  local find_cmd = "find " .. vim.fn.shellescape(vault_path) .. " -name '*.md' -type f -not -path '*/.*'"
+  local all_files = vim.fn.systemlist(find_cmd)
+  
+  -- Extract all tags from frontmatter
+  local tags = {}
+  for _, file in ipairs(all_files) do
+    local content = vim.fn.readfile(file)
+    local in_frontmatter = false
+    
+    for _, line in ipairs(content) do
+      if line == "---" then
+        in_frontmatter = not in_frontmatter
+      elseif in_frontmatter and line:match("^tags:") then
+        -- Extract tags from YAML array format: tags: [tag1, tag2, tag3]
+        local tags_line = line:gsub("^tags:%s*", "")
+        if tags_line:match("^%[.*%]$") then
+          -- Remove brackets and split by comma
+          local tags_content = tags_line:gsub("^%[", ""):gsub("%]$", "")
+          for tag in tags_content:gmatch("[^,]+") do
+            local clean_tag = tag:gsub("%s", ""):gsub('"', ''):gsub("'", "")
+            if clean_tag ~= "" then
+              if not tags[clean_tag] then
+                tags[clean_tag] = {}
+              end
+              table.insert(tags[clean_tag], file)
+            end
+          end
+        end
+        break -- Only process first tags line in frontmatter
+      end
+    end
+  end
+  
+  -- Convert tags table to list for fzf
+  local tag_list = {}
+  for tag, files in pairs(tags) do
+    table.insert(tag_list, tag .. " (" .. #files .. " files)")
+  end
+  
+  if #tag_list == 0 then
+    vim.notify("No tags found in frontmatter", vim.log.levels.INFO)
+    return
+  end
+  
+  fzf.fzf_exec(tag_list, {
     prompt = "Search Tags> ",
-    cwd = vim.fn.expand(config.options.vault_path),
-    search = "#",
+    actions = {
+      ["default"] = function(selected)
+        if selected and #selected > 0 then
+          local tag = selected[1]:match("^([^%(]+)")
+          tag = tag:gsub("%s+$", "") -- trim trailing whitespace
+          local files_with_tag = tags[tag]
+          
+          if files_with_tag and #files_with_tag > 0 then
+            -- Show files with this tag
+            local relative_files = {}
+            for _, file in ipairs(files_with_tag) do
+              local relative = file:gsub("^" .. vim.pesc(vault_path) .. "/", "")
+              table.insert(relative_files, relative)
+            end
+            
+            fzf.fzf_exec(relative_files, {
+              prompt = "Files with tag '" .. tag .. "'> ",
+              cwd = vault_path,
+              previewer = "builtin",
+              actions = {
+                ["default"] = function(file_selected)
+                  if file_selected and #file_selected > 0 then
+                    local file_path = vim.fn.expand(vault_path .. "/" .. file_selected[1])
+                    vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+                  end
+                end,
+              },
+            })
+          end
+        end
+      end,
+    },
   })
 end
 

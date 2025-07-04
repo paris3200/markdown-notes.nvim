@@ -5,9 +5,10 @@ A simple, configurable markdown note-taking plugin for Neovim with support for d
 ## Features
 
 - **Daily Notes**: Quick creation and navigation of daily notes with automatic templating
-- **Templates**: Flexible template system with variable substitution (`{{date}}`, `{{time}}`, etc.)
+- **Template-based Note Creation**: Create notes with default templates or choose from available templates
+- **Templates**: Flexible template system with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
 - **Wiki-style Links**: Create and follow `[[note-name]]` links between notes
-- **Powerful Search**: Find notes by filename or content, search tags
+- **Powerful Search**: Find notes by filename or content, search frontmatter tags with syntax highlighting
 - **Backlinks**: Discover which notes reference the current note
 - **Configurable**: Customize paths, keybindings, and behavior
 
@@ -58,6 +59,7 @@ require("markdown-notes").setup({
   dailies_path = "~/repos/notes/personal/dailies/2025",
   weekly_path = "~/repos/notes/personal/weekly",
   notes_subdir = "notes",
+  default_template = nil, -- Optional: default template for new notes (e.g., "note")
   
   -- Custom template variables
   template_vars = {
@@ -75,6 +77,7 @@ require("markdown-notes").setup({
     daily_note_yesterday = "<leader>oy", 
     daily_note_tomorrow = "<leader>ot",
     new_note = "<leader>on",
+    new_note_from_template = "<leader>oc",
     find_notes = "<leader>of",
     search_notes = "<leader>os",
     insert_link = "<leader>ol",
@@ -98,9 +101,10 @@ Daily notes are automatically created with your `Daily.md` template if it exists
 
 ### Note Management
 
-- `<leader>on` - Create a new note with frontmatter
-- `<leader>of` - Find and open existing notes
-- `<leader>os` - Search within note contents
+- `<leader>on` - Create a new note (uses default template if configured, otherwise basic frontmatter)
+- `<leader>oc` - Create a new note from template (choose template interactively)
+- `<leader>of` - Find and open existing notes with file preview
+- `<leader>os` - Search within note contents with syntax highlighting
 
 ### Links and Navigation
 
@@ -108,16 +112,21 @@ Daily notes are automatically created with your `Daily.md` template if it exists
   - Press `Enter` to open the selected note
   - Press `Ctrl+L` to insert a link to the note
 - `gf` - Follow the link under cursor
-- `<leader>ob` - Show backlinks to the current note
+- `<leader>ob` - Show backlinks to the current note with file preview
+  - Press `Enter` to open the selected note
+  - Press `Ctrl+L` to insert a link to the note
 
 ### Templates
 
-- `<leader>op` - Insert a template at cursor position
+- `<leader>op` - Insert a template at cursor position with file preview
 - Templates support variable substitution with `{{variable}}` syntax
+- Configure `default_template` to automatically apply a template to new notes
 
 ### Tags
 
-- `<leader>og` - Search for tags (lines containing `#`)
+- `<leader>og` - Search for tags from frontmatter (YAML tags: [tag1, tag2])
+  - Shows tag list with file counts
+  - Select a tag to view files containing that tag with preview
 
 ## Template Variables
 
@@ -127,8 +136,22 @@ Available template variables:
 - `{{time}}` - Current time (HH:MM)
 - `{{datetime}}` - Current date and time
 - `{{title}}` - Current file name without extension
+- `{{note_title}}` - User-provided title when creating notes (same as `{{title}}` for note creation)
 - `{{yesterday}}` - Yesterday's date
 - `{{tomorrow}}` - Tomorrow's date
+
+Example template usage:
+```markdown
+---
+title: {{title}}
+date: {{date}}
+tags: []
+---
+
+# {{title}}
+
+Created on {{datetime}}
+```
 
 ## Directory Structure
 

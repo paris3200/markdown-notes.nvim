@@ -1,0 +1,424 @@
+*markdown-notes.txt*  Markdown note-taking plugin for Neovim          *markdown-notes*
+
+==============================================================================
+CONTENTS                                                *markdown-notes-contents*
+
+1. Introduction                                      |markdown-notes-introduction|
+2. Requirements                                      |markdown-notes-requirements|
+3. Installation                                      |markdown-notes-installation|
+4. Configuration                                     |markdown-notes-configuration|
+5. Usage                                             |markdown-notes-usage|
+6. Commands                                          |markdown-notes-commands|
+7. Note Naming                                       |markdown-notes-note-naming|
+8. Template Variables                                |markdown-notes-template-vars|
+9. Directory Structure                               |markdown-notes-directory|
+10. Link Formats                                     |markdown-notes-link-formats|
+11. Troubleshooting                                  |markdown-notes-troubleshooting|
+12. API                                              |markdown-notes-api|
+
+==============================================================================
+INTRODUCTION                                        *markdown-notes-introduction*
+
+markdown-notes.nvim is a simple, configurable markdown note-taking plugin for 
+Neovim with support for daily notes, templates, wiki-style linking, and 
+powerful search capabilities.
+
+Features:
+- Daily Notes: Quick creation and navigation of daily notes with automatic
+  templating
+- Templates: Flexible template system with variable substitution
+- Wiki-style Links: Create and follow `[[note-name]]` links between notes
+- Powerful Search: Find notes by filename or content, search tags
+- Backlinks: Discover which notes reference the current note
+- Configurable: Customize paths, keybindings, and behavior
+
+==============================================================================
+REQUIREMENTS                                        *markdown-notes-requirements*
+
+- Neovim >= 0.8.0
+- fzf-lua (https://github.com/ibhagwan/fzf-lua) for fuzzy finding
+- marksman LSP (optional, for enhanced link completion)
+  (https://github.com/artempyanykh/marksman)
+
+==============================================================================
+INSTALLATION                                        *markdown-notes-installation*
+
+Using lazy.nvim: >
+    {
+      "paris3200/markdown-notes.nvim",
+      dependencies = {
+        "ibhagwan/fzf-lua",
+      },
+      config = function()
+        require("markdown-notes").setup({
+          -- your configuration here
+        })
+      end,
+    }
+<
+
+Using packer.nvim: >
+    use {
+      "paris3200/markdown-notes.nvim",
+      requires = { "ibhagwan/fzf-lua" },
+      config = function()
+        require("markdown-notes").setup()
+      end
+    }
+<
+
+==============================================================================
+CONFIGURATION                                       *markdown-notes-configuration*
+
+Default configuration: >
+    require("markdown-notes").setup({
+      vault_path = "~/repos/notes",
+      templates_path = "~/repos/notes/sys/templates",
+      dailies_path = "~/repos/notes/personal/dailies/2025",
+      weekly_path = "~/repos/notes/personal/weekly",
+      notes_subdir = "notes",
+      default_template = nil, -- Optional: default template for new notes (e.g., "note")
+      
+      -- Custom template variables
+      template_vars = {
+        date = function() return os.date("%Y-%m-%d") end,
+        time = function() return os.date("%H:%M") end,
+        datetime = function() return os.date("%Y-%m-%d %H:%M") end,
+        title = function() return vim.fn.expand("%:t:r") end,
+        yesterday = function() return os.date("%Y-%m-%d", os.time() - 86400) end,
+        tomorrow = function() return os.date("%Y-%m-%d", os.time() + 86400) end,
+      },
+      
+      -- Key mappings
+      mappings = {
+        daily_note_today = "<leader>od",
+        daily_note_yesterday = "<leader>oy", 
+        daily_note_tomorrow = "<leader>ot",
+        new_note = "<leader>on",
+        new_note_from_template = "<leader>oc",
+        find_notes = "<leader>of",
+        search_notes = "<leader>os",
+        insert_link = "<leader>ol",
+        insert_template = "<leader>op",
+        search_tags = "<leader>og",
+        show_backlinks = "<leader>ob",
+        follow_link = "gf",
+      },
+    })
+<
+
+                                                    *markdown-notes-vault-path*
+vault_path~
+    Path to your notes vault. Default: "~/repos/notes"
+
+                                                *markdown-notes-templates-path*
+templates_path~
+    Path to your templates directory. Default: "~/repos/notes/sys/templates"
+
+                                                  *markdown-notes-dailies-path*
+dailies_path~
+    Path to your daily notes directory. Default: "~/repos/notes/personal/dailies/2025"
+
+                                                   *markdown-notes-weekly-path*
+weekly_path~
+    Path to your weekly notes directory. Default: "~/repos/notes/personal/weekly"
+
+                                                 *markdown-notes-notes-subdir*
+notes_subdir~
+    Subdirectory within vault_path for general notes. Default: "notes"
+
+                                             *markdown-notes-default-template*
+default_template~
+    Default template to use for new notes created with `new_note`. If set to 
+    a template name (without .md extension), that template will be applied 
+    automatically. If nil, basic frontmatter is used. Default: nil
+
+                                            *markdown-notes-template-vars-config*
+template_vars~
+    Table of template variables (see |markdown-notes-template-vars|).
+
+                                                     *markdown-notes-mappings*
+mappings~
+    Table of key mappings (see |markdown-notes-commands|).
+
+==============================================================================
+USAGE                                                      *markdown-notes-usage*
+
+Daily Notes~
+                                                    *markdown-notes-daily-notes*
+Create and navigate daily notes with automatic templating.
+
+- `<leader>od` - Open today's daily note
+- `<leader>oy` - Open yesterday's daily note  
+- `<leader>ot` - Open tomorrow's daily note
+
+Daily notes are automatically created with your `Daily.md` template if it exists.
+
+Note Management~
+                                                *markdown-notes-note-management*
+- `<leader>on` - Create a new note (uses default template if configured, otherwise basic frontmatter)
+- `<leader>oc` - Create a new note from template (choose template interactively)
+- `<leader>of` - Find and open existing notes (with file preview and syntax highlighting)
+- `<leader>os` - Search within note contents (with file preview and syntax highlighting)
+
+Links and Navigation~
+                                                *markdown-notes-links-navigation*
+- `<leader>ol` - Search for a note and insert a `[[wiki-link]]` (with file preview)
+  - Press `Enter` to open the selected note
+  - Press `Ctrl+L` to insert a link to the note
+- `gf` - Follow the link under cursor (supports fuzzy matching)
+- `<leader>ob` - Show backlinks to the current note (with file preview)
+  - Press `Enter` to open the selected note
+  - Press `Ctrl+L` to insert a link to the note
+
+Templates~
+                                                      *markdown-notes-templates*
+- `<leader>op` - Insert a template at cursor position (with file preview)
+- Templates support variable substitution with `{{variable}}` syntax
+
+Tags~
+                                                           *markdown-notes-tags*
+- `<leader>og` - Search for tags in frontmatter (YAML format: `tags: [tag1, tag2]`)
+  - Shows tag list with file counts
+  - Select a tag to view files containing that tag with preview
+
+==============================================================================
+COMMANDS                                                *markdown-notes-commands*
+
+The plugin provides the following functions that can be called directly:
+
+                                                  *markdown-notes.create_new_note*
+require("markdown-notes.notes").create_new_note()
+    Create a new note. Uses default template if configured, otherwise creates
+    basic frontmatter. Prompts for optional title.
+
+                                               *markdown-notes.create_from_template*
+require("markdown-notes.notes").create_from_template()
+    Create a new note from template. Prompts for title, then allows interactive
+    template selection with file preview.
+
+                                                    *markdown-notes.find_notes*
+require("markdown-notes.notes").find_notes()
+    Find and open existing notes using fuzzy finder.
+
+                                                   *markdown-notes.search_notes*
+require("markdown-notes.notes").search_notes()
+    Search within note contents using fuzzy finder.
+
+                                                   *markdown-notes.search_tags*
+require("markdown-notes.notes").search_tags()
+    Search for tags within notes.
+
+                                             *markdown-notes.open_daily_note*
+require("markdown-notes.daily").open_daily_note(offset)
+    Open daily note. `offset` is number of days from today (0 = today, 
+    -1 = yesterday, 1 = tomorrow).
+
+                                                *markdown-notes.search_and_link*
+require("markdown-notes.links").search_and_link()
+    Search for a note and insert a wiki-style link.
+
+                                                   *markdown-notes.follow_link*
+require("markdown-notes.links").follow_link()
+    Follow the wiki-style link under cursor.
+
+                                                 *markdown-notes.show_backlinks*
+require("markdown-notes.links").show_backlinks()
+    Show backlinks to the current note.
+
+                                                 *markdown-notes.pick_template*
+require("markdown-notes.templates").pick_template()
+    Pick and insert a template at cursor position.
+
+                                               *markdown-notes.insert_template*
+require("markdown-notes.templates").insert_template(template_name, custom_vars)
+    Insert a specific template with optional custom variables.
+
+                                          *markdown-notes.apply_template_to_file*
+require("markdown-notes.templates").apply_template_to_file(template_name, custom_vars)
+    Replace entire buffer content with specified template. Used by 
+    create_from_template(). Returns true on success, false on failure.
+
+==============================================================================
+NOTE NAMING                                            *markdown-notes-note-naming*
+
+The plugin uses a timestamp-based naming convention for notes to ensure unique
+filenames and chronological organization.
+
+Filename Format~
+                                                  *markdown-notes-filename-format*
+When creating a new note, the filename is generated as follows:
+
+- If no title is provided: `{timestamp}.md`
+- If a title is provided: `{timestamp}-{sanitized-title}.md`
+
+Where:
+- `{timestamp}` is the Unix timestamp (seconds since epoch)
+- `{sanitized-title}` is the title with spaces replaced by hyphens, 
+  non-alphanumeric characters removed, and converted to lowercase
+
+Examples:
+- No title: `1735948800.md`
+- Title "My Project Ideas": `1735948800-my-project-ideas.md`
+- Title "Meeting Notes #1": `1735948800-meeting-notes-1.md`
+
+Benefits~
+                                                    *markdown-notes-naming-benefits*
+- Unique filenames prevent conflicts
+- Chronological ordering when sorted by filename
+- Human-readable titles when provided
+- Consistent naming across all notes
+
+Daily Notes~
+                                                *markdown-notes-daily-note-naming*
+Daily notes use a different naming convention based on dates:
+- Format: `YYYY-MM-DD.md`
+- Example: `2025-01-03.md`
+
+This provides a clear, date-based organization for daily notes separate from
+general notes.
+
+==============================================================================
+TEMPLATE VARIABLES                                 *markdown-notes-template-vars*
+
+Available template variables for use in templates with `{{variable}}` syntax:
+
+`{{date}}`          Current date (YYYY-MM-DD)
+`{{time}}`          Current time (HH:MM)
+`{{datetime}}`      Current date and time
+`{{title}}`         Current file name without extension
+`{{note_title}}`    User-provided title when creating notes (same as `{{title}}` for note creation)
+`{{yesterday}}`     Yesterday's date
+`{{tomorrow}}`      Tomorrow's date
+
+Example template: >
+    ---
+    title: {{title}}
+    date: {{date}}
+    tags: []
+    ---
+    
+    # {{title}}
+    
+    Created on {{datetime}}
+<
+
+You can define custom template variables in your configuration: >
+    template_vars = {
+      author = function() return "Your Name" end,
+      project = function() return vim.fn.getcwd():match("([^/]+)$") end,
+    }
+<
+
+==============================================================================
+DIRECTORY STRUCTURE                                *markdown-notes-directory*
+
+Recommended directory structure: >
+    ~/repos/notes/
+    ├── sys/
+    │   └── templates/
+    │       ├── Daily.md
+    │       ├── Meeting.md
+    │       └── Project.md
+    ├── personal/
+    │   └── dailies/
+    │       └── 2025/
+    │           ├── 2025-01-01.md
+    │           └── 2025-01-02.md
+    └── notes/
+        ├── project-ideas.md
+        └── learning-resources.md
+<
+
+==============================================================================
+LINK FORMATS                                           *markdown-notes-link-formats*
+
+Wiki-style Links~
+                                                      *markdown-notes-wiki-links*
+The plugin supports standard wiki-style links with the following formats:
+
+- `[[note-name]]` - Basic link to a note
+- `[[note-name|display text]]` - Link with custom display text
+
+Link Resolution~
+                                                *markdown-notes-link-resolution*
+When following links with `gf`, the plugin uses fuzzy matching:
+
+1. First tries exact filename match: `note-name.md`
+2. If not found, searches for files containing the link text: `*note-name*.md`
+3. Opens the first match found
+
+Backlinks Detection~
+                                               *markdown-notes-backlinks-detection*
+The backlinks feature (`<leader>ob`) detects both:
+- Basic links: `[[current-note]]`
+- Links with display text: `[[current-note|custom text]]`
+
+==============================================================================
+TROUBLESHOOTING                                    *markdown-notes-troubleshooting*
+
+Common Issues~
+                                                *markdown-notes-common-issues*
+
+fzf-lua not available~
+If you see "fzf-lua not available" errors, ensure fzf-lua is installed:
+- Add `"ibhagwan/fzf-lua"` to your plugin manager dependencies
+- Run `:checkhealth fzf-lua` to verify installation
+
+Template not found~
+If templates aren't loading:
+- Verify `templates_path` in your configuration exists
+- Ensure template files have `.md` extension
+- Check file permissions on template directory
+
+No backlinks found~
+If backlinks aren't detected:
+- Ensure links use exact `[[note-name]]` format (case-sensitive)
+- Check that the current file is within your vault_path
+- Verify linked files exist in your vault
+
+File previews not working~
+If file previews don't show:
+- Ensure you have a compatible terminal with true color support
+- Check that your colorscheme supports syntax highlighting
+- Verify fzf-lua is properly configured
+
+Performance Issues~
+                                                *markdown-notes-performance-issues*
+For large vaults (>1000 files):
+- Consider excluding certain directories from search
+- Use more specific search terms
+- Consider organizing notes into subdirectories
+
+==============================================================================
+API                                                        *markdown-notes-api*
+
+                                                        *markdown-notes.setup*
+require("markdown-notes").setup({opts})
+    Setup function to configure the plugin. See |markdown-notes-configuration|
+    for available options.
+
+The plugin exposes the following modules:
+
+                                                  *markdown-notes.config*
+require("markdown-notes.config")
+    Configuration management module.
+
+                                                   *markdown-notes.daily*
+require("markdown-notes.daily")
+    Daily notes functionality.
+
+                                                   *markdown-notes.notes*
+require("markdown-notes.notes")
+    General note management.
+
+                                                   *markdown-notes.links*
+require("markdown-notes.links")
+    Wiki-style links and backlinks.
+
+                                               *markdown-notes.templates*
+require("markdown-notes.templates")
+    Template system and variable substitution.
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:

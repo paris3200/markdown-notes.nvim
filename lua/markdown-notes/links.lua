@@ -76,8 +76,13 @@ function M.follow_link()
 end
 
 function M.show_backlinks()
-  local current_file = vim.fn.expand("%:t:r")
-  if current_file == "" then
+  local current_path = vim.fn.expand("%:p")
+  local vault_path = vim.fn.expand(config.options.vault_path)
+  
+  -- Get relative path from vault root and remove .md extension
+  local relative_path = current_path:gsub("^" .. vim.pesc(vault_path) .. "/", ""):gsub("%.md$", "")
+  
+  if relative_path == "" then
     vim.notify("No current file", vim.log.levels.WARN)
     return
   end
@@ -88,10 +93,46 @@ function M.show_backlinks()
     return
   end
   
-  fzf.grep({
+  -- Find files that contain links to this note
+  local search_text = "[[" .. relative_path .. "]]"
+  
+  -- Get all markdown files first, then check each one
+  local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) .. " && find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'"
+  local all_files = vim.fn.systemlist(all_files_cmd)
+  
+  local linked_files = {}
+  for _, file in ipairs(all_files) do
+    local full_path = vault_path .. "/" .. file
+    local file_content = vim.fn.readfile(full_path)
+    local content_str = table.concat(file_content, "\n")
+    
+    -- Simple string search for the exact link
+    if content_str:find(search_text, 1, true) then
+      table.insert(linked_files, file)
+    end
+    
+    -- Also check for links with display text (|)
+    local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "|"
+    if content_str:find(link_with_display) then
+      table.insert(linked_files, file)
+    end
+  end
+  
+  if #linked_files == 0 then
+    vim.notify("No backlinks found for: " .. relative_path, vim.log.levels.INFO)
+    return
+  end
+  
+  fzf.fzf_exec(linked_files, {
     prompt = "Backlinks> ",
-    cwd = vim.fn.expand(config.options.vault_path),
-    search = "\\[\\[" .. current_file .. "\\]\\]",
+    actions = {
+      ["default"] = function(selected)
+        if selected and #selected > 0 then
+          local file_path = vim.fn.expand(config.options.vault_path .. "/" .. selected[1])
+          vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+        end
+      end,
+    },
   })
 end
 

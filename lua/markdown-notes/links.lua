@@ -13,16 +13,21 @@ function M.search_and_link()
     prompt = "Link to Note> ",
     cwd = vim.fn.expand(config.options.vault_path),
     find_opts = "-name '*.md' -type f",
+    file_icons = false,
+    path_shorten = false,
+    formatter = nil,
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then
-          vim.cmd("edit " .. selected[1])
+          local file_path = vim.fn.expand(config.options.vault_path .. "/" .. selected[1])
+          vim.cmd("edit " .. vim.fn.fnameescape(file_path))
         end
       end,
       ["ctrl-l"] = function(selected)
         if selected and #selected > 0 then
-          local filename = vim.fn.fnamemodify(selected[1], ":t:r")
-          local link = "[[" .. filename .. "]]"
+          -- Remove .md extension but keep the full path
+          local link_path = selected[1]:gsub("%.md$", "")
+          local link = "[[" .. link_path .. "]]"
           
           -- Insert link at cursor
           local cursor_pos = vim.api.nvim_win_get_cursor(0)

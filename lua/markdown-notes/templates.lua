@@ -54,6 +54,9 @@ function M.pick_template()
     prompt = "Select Template> ",
     cwd = vim.fn.expand(config.options.templates_path),
     find_opts = "-name '*.md' -type f",
+    file_icons = false,
+    path_shorten = false,
+    formatter = nil,
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then

@@ -15,7 +15,9 @@ function M.search_and_link()
     find_opts = "-name '*.md' -type f",
     actions = {
       ["default"] = function(selected)
-        fzf.actions.file_edit(selected)
+        if selected and #selected > 0 then
+          vim.cmd("edit " .. selected[1])
+        end
       end,
       ["ctrl-l"] = function(selected)
         if selected and #selected > 0 then

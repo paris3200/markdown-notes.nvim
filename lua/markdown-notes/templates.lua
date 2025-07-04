@@ -4,7 +4,18 @@ local M = {}
 
 function M.substitute_template_vars(content, custom_vars)
   local template_vars = config.options.template_vars or config.defaults.template_vars
-  local vars = vim.tbl_extend("force", template_vars, custom_vars or {})
+  local vars = {}
+  
+  -- Manual merge since vim.tbl_extend might not be available in tests
+  for k, v in pairs(template_vars) do
+    vars[k] = v
+  end
+  
+  if custom_vars then
+    for k, v in pairs(custom_vars) do
+      vars[k] = v
+    end
+  end
   
   for i, line in ipairs(content) do
     for var_name, var_func in pairs(vars) do

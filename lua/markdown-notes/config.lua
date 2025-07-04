@@ -35,8 +35,30 @@ M.defaults = {
 
 M.options = {}
 
+local function deep_extend(target, source)
+  for k, v in pairs(source) do
+    if type(v) == "table" and type(target[k]) == "table" then
+      deep_extend(target[k], v)
+    else
+      target[k] = v
+    end
+  end
+  return target
+end
+
 function M.setup(opts)
-  M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
+  if vim and vim.tbl_deep_extend then
+    M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
+  else
+    -- Fallback for test environment
+    M.options = {}
+    for k, v in pairs(M.defaults) do
+      M.options[k] = v
+    end
+    if opts then
+      deep_extend(M.options, opts)
+    end
+  end
 end
 
 return M

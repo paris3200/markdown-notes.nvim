@@ -49,6 +49,7 @@ function M.find_notes()
     prompt = "Find Notes> ",
     cwd = vim.fn.expand(config.options.vault_path),
     cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
+    previewer = "builtin",
   })
 end
 
@@ -62,6 +63,7 @@ function M.search_notes()
   fzf.grep({
     prompt = "Search Notes> ",
     cwd = vim.fn.expand(config.options.vault_path),
+    previewer = "builtin",
   })
 end
 

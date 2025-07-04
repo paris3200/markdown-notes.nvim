@@ -57,6 +57,7 @@ function M.pick_template()
     file_icons = false,
     path_shorten = false,
     formatter = nil,
+    previewer = "builtin",
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then

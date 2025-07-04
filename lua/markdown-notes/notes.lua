@@ -3,10 +3,16 @@ local config = require("markdown-notes.config")
 local M = {}
 
 function M.create_new_note()
-  local title = vim.fn.input("Note title: ")
-  if title == "" then return end
+  local title = vim.fn.input("Note title (optional): ")
   
-  local filename = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+  -- Generate timestamp-based filename
+  local timestamp = tostring(os.time())
+  local filename = timestamp
+  if title ~= "" then
+    local clean_title = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
+    filename = timestamp .. "-" .. clean_title
+  end
+  
   local file_path = vim.fn.expand(config.options.vault_path .. "/" .. config.options.notes_subdir .. "/" .. filename .. ".md")
   
   -- Create directory if needed
@@ -18,14 +24,15 @@ function M.create_new_note()
   vim.cmd("edit " .. file_path)
   
   -- Insert basic frontmatter
+  local display_title = title ~= "" and title or "Untitled"
   local frontmatter = {
     "---",
-    "title: " .. title,
+    "title: " .. display_title,
     "date: " .. os.date("%Y-%m-%d"),
     "tags: []",
     "---",
     "",
-    "# " .. title,
+    "# " .. display_title,
     "",
   }
   vim.api.nvim_buf_set_lines(0, 0, 0, false, frontmatter)

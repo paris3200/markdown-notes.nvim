@@ -3,7 +3,8 @@ local config = require("markdown-notes.config")
 local M = {}
 
 function M.substitute_template_vars(content, custom_vars)
-  local vars = vim.tbl_extend("force", config.options.template_vars, custom_vars or {})
+  local template_vars = config.options.template_vars or config.defaults.template_vars
+  local vars = vim.tbl_extend("force", template_vars, custom_vars or {})
   
   for i, line in ipairs(content) do
     for var_name, var_func in pairs(vars) do

@@ -27,6 +27,7 @@ function M.setup(opts)
   
   -- Note management
   map("n", "new_note", notes.create_new_note, "Create new note")
+  map("n", "new_note_from_template", notes.create_from_template, "Create new note from template")
   map("n", "find_notes", notes.find_notes, "Find notes")
   map("n", "search_notes", notes.search_notes, "Search notes")
   

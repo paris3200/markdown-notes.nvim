@@ -6,6 +6,7 @@ M.defaults = {
   dailies_path = "~/repos/notes/personal/dailies/2025",
   weekly_path = "~/repos/notes/personal/weekly",
   notes_subdir = "notes",
+  default_template = nil, -- Optional default template for new notes
   
   -- Template substitution variables
   template_vars = {
@@ -23,6 +24,7 @@ M.defaults = {
     daily_note_yesterday = "<leader>oy", 
     daily_note_tomorrow = "<leader>ot",
     new_note = "<leader>on",
+    new_note_from_template = "<leader>oc",
     find_notes = "<leader>of",
     search_notes = "<leader>os",
     insert_link = "<leader>ol",

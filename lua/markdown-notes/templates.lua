@@ -53,7 +53,7 @@ function M.pick_template()
   fzf.files({
     prompt = "Select Template> ",
     cwd = vim.fn.expand(config.options.templates_path),
-    find_opts = "-name '*.md' -type f -not -path '*/.*'",
+    cmd = "find . -name '*.md' -type f -not -path '*/.*'",
     file_icons = false,
     path_shorten = false,
     formatter = nil,

@@ -12,7 +12,7 @@ function M.search_and_link()
   fzf.files({
     prompt = "Link to Note> ",
     cwd = vim.fn.expand(config.options.vault_path),
-    find_opts = "-name '*.md' -type f -not -path '*/.*'",
+    cmd = "find . -name '*.md' -type f -not -path '*/.*'",
     file_icons = false,
     path_shorten = false,
     formatter = nil,

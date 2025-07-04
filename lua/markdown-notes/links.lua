@@ -2,6 +2,20 @@ local config = require("markdown-notes.config")
 
 local M = {}
 
+-- Helper function to insert a link at cursor position
+local function insert_link_at_cursor(file_path)
+  -- Remove .md extension but keep the full path
+  local link_path = file_path:gsub("%.md$", "")
+  local link = "[[" .. link_path .. "]]"
+  
+  -- Insert link at cursor
+  local cursor_pos = vim.api.nvim_win_get_cursor(0)
+  local line = vim.api.nvim_get_current_line()
+  local new_line = line:sub(1, cursor_pos[2]) .. link .. line:sub(cursor_pos[2] + 1)
+  vim.api.nvim_set_current_line(new_line)
+  vim.api.nvim_win_set_cursor(0, {cursor_pos[1], cursor_pos[2] + #link})
+end
+
 function M.search_and_link()
   local ok, fzf = pcall(require, "fzf-lua")
   if not ok then
@@ -16,6 +30,7 @@ function M.search_and_link()
     file_icons = false,
     path_shorten = false,
     formatter = nil,
+    previewer = "builtin",
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then
@@ -25,16 +40,7 @@ function M.search_and_link()
       end,
       ["ctrl-l"] = function(selected)
         if selected and #selected > 0 then
-          -- Remove .md extension but keep the full path
-          local link_path = selected[1]:gsub("%.md$", "")
-          local link = "[[" .. link_path .. "]]"
-          
-          -- Insert link at cursor
-          local cursor_pos = vim.api.nvim_win_get_cursor(0)
-          local line = vim.api.nvim_get_current_line()
-          local new_line = line:sub(1, cursor_pos[2]) .. link .. line:sub(cursor_pos[2] + 1)
-          vim.api.nvim_set_current_line(new_line)
-          vim.api.nvim_win_set_cursor(0, {cursor_pos[1], cursor_pos[2] + #link})
+          insert_link_at_cursor(selected[1])
         end
       end,
     },
@@ -125,11 +131,18 @@ function M.show_backlinks()
   
   fzf.fzf_exec(linked_files, {
     prompt = "Backlinks> ",
+    cwd = vault_path,
+    previewer = "builtin",
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then
           local file_path = vim.fn.expand(config.options.vault_path .. "/" .. selected[1])
           vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+        end
+      end,
+      ["ctrl-l"] = function(selected)
+        if selected and #selected > 0 then
+          insert_link_at_cursor(selected[1])
         end
       end,
     },

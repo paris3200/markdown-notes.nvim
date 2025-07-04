@@ -21,7 +21,7 @@ function M.substitute_template_vars(content, custom_vars)
     for var_name, var_func in pairs(vars) do
       local pattern = "{{" .. var_name .. "}}"
       local replacement = type(var_func) == "function" and var_func() or var_func
-      content[i] = string.gsub(line, pattern, replacement)
+      content[i] = string.gsub(content[i], pattern, replacement)
     end
   end
   

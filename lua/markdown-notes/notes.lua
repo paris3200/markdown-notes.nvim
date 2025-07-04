@@ -41,7 +41,7 @@ function M.find_notes()
   fzf.files({
     prompt = "Find Notes> ",
     cwd = vim.fn.expand(config.options.vault_path),
-    find_opts = "-name '*.md' -type f",
+    find_opts = "-name '*.md' -type f -not -path '*/.*'",
   })
 end
 

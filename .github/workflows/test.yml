@@ -14,10 +14,10 @@ jobs:
         neovim_version: ['v0.8.0', 'v0.9.0', 'nightly']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Install Neovim
-      uses: rhymond/setup-neovim@v0.2.0
+      uses: MeanderingProgrammer/install-neovim@v1
       with:
         version: ${{ matrix.neovim_version }}
     

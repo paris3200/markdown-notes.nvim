@@ -12,7 +12,7 @@ function M.search_and_link()
   fzf.files({
     prompt = "Link to Note> ",
     cwd = vim.fn.expand(config.options.vault_path),
-    find_opts = "-name '*.md' -type f",
+    cmd = "find . -name '*.md' -type f -not -path '*/.*'",
     file_icons = false,
     path_shorten = false,
     formatter = nil,
@@ -55,7 +55,7 @@ function M.follow_link()
       
       -- Try to find the file if exact match doesn't exist
       if vim.fn.filereadable(file_path) == 0 then
-        local find_cmd = "find " .. vim.fn.expand(config.options.vault_path) .. " -name '*" .. link_text .. "*.md' -type f"
+        local find_cmd = "find " .. vim.fn.expand(config.options.vault_path) .. " -name '*" .. link_text .. "*.md' -type f -not -path '*/.*'"
         local found_files = vim.fn.systemlist(find_cmd)
         if #found_files > 0 then
           file_path = found_files[1]

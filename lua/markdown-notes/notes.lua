@@ -95,7 +95,7 @@ function M.create_from_template()
   fzf.files({
     prompt = "Select Template> ",
     cwd = vim.fn.expand(config.options.templates_path),
-    cmd = "find . -name '*.md' -type f -not -path '*/.*'",
+    cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
     file_icons = false,
     path_shorten = false,
     formatter = nil,

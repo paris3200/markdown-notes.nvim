@@ -32,7 +32,7 @@ function M.setup_keymaps()
     -- Use a wrapper that gets current workspace config at runtime
     local function wrapped_cmd()
       if type(cmd) == "function" then
-        return cmd()
+        cmd()
       else
         return cmd
       end

@@ -8,6 +8,7 @@ A simple, configurable markdown note-taking plugin for Neovim with support for d
 - **Template-based Note Creation**: Create notes with default templates or choose from available templates
 - **Templates**: Flexible template system with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
 - **Wiki-style Links**: Create and follow `[[note-name]]` links between notes
+- **Note Renaming**: Rename notes and automatically update all references across your vault
 - **Powerful Search**: Find notes by filename or content, search frontmatter tags with syntax highlighting
 - **Backlinks**: Discover which notes reference the current note
 - **Workspaces**: Support for multiple independent note vaults with manual switching
@@ -86,6 +87,7 @@ require("markdown-notes").setup({
     search_tags = "<leader>og",
     show_backlinks = "<leader>ob",
     follow_link = "gf",
+    rename_note = "<leader>or",
   },
 })
 ```
@@ -135,8 +137,12 @@ The plugin uses a simple, predictable workspace system:
 - **Manual switching**: Use `<leader>ow` or commands to switch active workspace  
 - **Persistent**: All operations use the active workspace until you manually switch
 
-### Workspace Management Commands
+### Commands
 
+**Note Management:**
+- `:MarkdownNotesRename [name]` - Rename current note and update all references (prompts if no name provided)
+
+**Workspace Management:**
 - `:MarkdownNotesWorkspaceStatus` - Show current workspace for the buffer
 - `:MarkdownNotesWorkspacePick` - Pick workspace with fuzzy finder
 - `:MarkdownNotesWorkspaceSwitch <name>` - Switch to a workspace directory
@@ -222,6 +228,10 @@ Daily notes are automatically created with your `Daily.md` template if it exists
 - `<leader>ob` - Show backlinks to the current note with file preview
   - Press `Enter` to open the selected note
   - Press `Ctrl+L` to insert a link to the note
+- `<leader>or` - Rename the current note and update all references
+  - Prompts for new name and shows confirmation with file count
+  - Updates all `[[wiki-links]]` and `[[link|display text]]` references
+  - Handles files in subdirectories and prevents partial matches
 
 ### Templates
 

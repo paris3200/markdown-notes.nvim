@@ -62,6 +62,13 @@ function M.setup_keymaps()
   map("n", "insert_link", links.search_and_link, "Insert link to note")
   map("n", "follow_link", links.follow_link, "Follow link")
   map("n", "show_backlinks", links.show_backlinks, "Show backlinks")
+  map("n", "rename_note", function() 
+    vim.ui.input({prompt = "New note name: "}, function(input)
+      if input then
+        links.rename_note(input)
+      end
+    end)
+  end, "Rename note and update links")
   
   -- Templates
   map("n", "insert_template", templates.pick_template, "Insert template")
@@ -71,6 +78,19 @@ function M.setup_keymaps()
   
   -- Workspaces
   map("n", "pick_workspace", workspace.pick_workspace, "Pick workspace")
+  
+  -- Note management commands
+  vim.api.nvim_create_user_command("MarkdownNotesRename", function(opts)
+    if opts.args and opts.args ~= "" then
+      links.rename_note(opts.args)
+    else
+      vim.ui.input({prompt = "New note name: "}, function(input)
+        if input then
+          links.rename_note(input)
+        end
+      end)
+    end
+  end, { nargs = "?", desc = "Rename current note and update links" })
   
   -- Workspace management commands
   vim.api.nvim_create_user_command("MarkdownNotesWorkspaceStatus", workspace.show_current_workspace, { desc = "Show current workspace" })

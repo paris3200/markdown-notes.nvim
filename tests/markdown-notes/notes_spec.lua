@@ -3,6 +3,8 @@ local config = require("markdown-notes.config")
 
 describe("notes", function()
   before_each(function()
+    config.options = {}
+    config.workspaces = {}
     config.setup({
       vault_path = "/tmp/test-vault",
       notes_subdir = "notes"
@@ -65,6 +67,70 @@ describe("notes", function()
       
       -- Restore mocks
       os.time = original_time
+      vim.fn.input = original_input
+      vim.fn.expand = original_expand
+      vim.fn.fnamemodify = original_fnamemodify
+      vim.fn.isdirectory = original_isdirectory
+      vim.cmd = original_cmd
+      vim.api.nvim_buf_set_lines = original_buf_set_lines
+    end)
+  end)
+
+  describe("workspace integration", function()
+    it("uses workspace-specific vault path", function()
+      -- Set up workspace
+      config.setup_workspace("work", {
+        vault_path = "/work/notes",
+        notes_subdir = "projects"
+      })
+      
+      -- Mock vim.api.nvim_buf_get_name to return work workspace path
+      local original_get_name = vim.api.nvim_buf_get_name
+      vim.api.nvim_buf_get_name = function(bufnr)
+        return "/work/notes/existing.md"
+      end
+      
+      -- Mock other functions
+      local original_input = vim.fn.input
+      vim.fn.input = function() return "test-note" end
+      
+      local original_expand = vim.fn.expand
+      vim.fn.expand = function(path)
+        return path
+      end
+      
+      local original_fnamemodify = vim.fn.fnamemodify
+      vim.fn.fnamemodify = function(path, modifier)
+        if modifier == ":h" then
+          return "/work/notes/projects"
+        end
+        return path
+      end
+      
+      local original_isdirectory = vim.fn.isdirectory
+      vim.fn.isdirectory = function() return 1 end
+      
+      local opened_file = nil
+      local original_cmd = vim.cmd
+      vim.cmd = function(cmd)
+        if cmd:match("^edit ") then
+          opened_file = cmd:match("^edit (.+)$")
+        end
+      end
+      
+      local original_buf_set_lines = vim.api.nvim_buf_set_lines
+      vim.api.nvim_buf_set_lines = function() end
+      
+      -- Call the function
+      notes.create_new_note()
+      
+      -- Verify workspace-specific path was used
+      assert.is_not_nil(opened_file)
+      assert.matches("/work/notes/projects", opened_file)
+      assert.matches("test%-note", opened_file)
+      
+      -- Restore mocks
+      vim.api.nvim_buf_get_name = original_get_name
       vim.fn.input = original_input
       vim.fn.expand = original_expand
       vim.fn.fnamemodify = original_fnamemodify

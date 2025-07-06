@@ -3,7 +3,12 @@ local config = require("markdown-notes.config")
 local M = {}
 
 function M.substitute_template_vars(content, custom_vars)
-  local template_vars = config.options.template_vars or config.defaults.template_vars
+  local options = config.get_current_config()
+  -- Fallback to config.options if no workspace config available
+  if not options then
+    options = config.options
+  end
+  local template_vars = options.template_vars or config.defaults.template_vars
   local vars = {}
   
   -- Manual merge since vim.tbl_extend might not be available in tests
@@ -29,7 +34,11 @@ function M.substitute_template_vars(content, custom_vars)
 end
 
 function M.insert_template(template_name, custom_vars)
-  local template_path = vim.fn.expand(config.options.templates_path .. "/" .. template_name .. ".md")
+  local options = config.get_current_config()
+  if not options then
+    options = config.options
+  end
+  local template_path = vim.fn.expand(options.templates_path .. "/" .. template_name .. ".md")
   
   if vim.fn.filereadable(template_path) == 0 then
     vim.notify("Template not found: " .. template_path, vim.log.levels.ERROR)
@@ -44,7 +53,11 @@ function M.insert_template(template_name, custom_vars)
 end
 
 function M.apply_template_to_file(template_name, custom_vars)
-  local template_path = vim.fn.expand(config.options.templates_path .. "/" .. template_name .. ".md")
+  local options = config.get_current_config()
+  if not options then
+    options = config.options
+  end
+  local template_path = vim.fn.expand(options.templates_path .. "/" .. template_name .. ".md")
   
   if vim.fn.filereadable(template_path) == 0 then
     vim.notify("Template not found: " .. template_path, vim.log.levels.ERROR)
@@ -65,10 +78,14 @@ function M.pick_template()
     vim.notify("fzf-lua not available", vim.log.levels.ERROR)
     return
   end
+  local options = config.get_current_config()
+  if not options then
+    options = config.options
+  end
   
   fzf.files({
     prompt = "Select Template> ",
-    cwd = vim.fn.expand(config.options.templates_path),
+    cwd = vim.fn.expand(options.templates_path),
     cmd = "find . -name '*.md' -type f -not -path '*/.*'",
     file_icons = false,
     path_shorten = false,

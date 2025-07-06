@@ -3,6 +3,8 @@ local config = require("markdown-notes.config")
 
 describe("templates", function()
   before_each(function()
+    config.options = {}
+    config.workspaces = {}
     config.setup({})
   end)
 

@@ -22,10 +22,11 @@ function M.search_and_link()
     vim.notify("fzf-lua not available", vim.log.levels.ERROR)
     return
   end
+  local options = config.get_current_config()
   
   fzf.files({
     prompt = "Link to Note> ",
-    cwd = vim.fn.expand(config.options.vault_path),
+    cwd = vim.fn.expand(options.vault_path),
     cmd = "find . -name '*.md' -type f -not -path '*/.*'",
     file_icons = false,
     path_shorten = false,
@@ -34,7 +35,7 @@ function M.search_and_link()
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then
-          local file_path = vim.fn.expand(config.options.vault_path .. "/" .. selected[1])
+          local file_path = vim.fn.expand(options.vault_path .. "/" .. selected[1])
           vim.cmd("edit " .. vim.fn.fnameescape(file_path))
         end
       end,
@@ -50,6 +51,7 @@ end
 function M.follow_link()
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2]
+  local options = config.get_current_config()
   
   -- Look for [[link]] pattern around cursor
   local link_start = line:sub(1, col + 1):find("%[%[[^%]]*$")
@@ -57,11 +59,11 @@ function M.follow_link()
     local link_end = line:find("%]%]", col + 1)
     if link_end then
       local link_text = line:sub(link_start + 2, link_end - 1)
-      local file_path = vim.fn.expand(config.options.vault_path .. "/" .. link_text .. ".md")
+      local file_path = vim.fn.expand(options.vault_path .. "/" .. link_text .. ".md")
       
       -- Try to find the file if exact match doesn't exist
       if vim.fn.filereadable(file_path) == 0 then
-        local find_cmd = "find " .. vim.fn.expand(config.options.vault_path) .. " -name '*" .. link_text .. "*.md' -type f -not -path '*/.*'"
+        local find_cmd = "find " .. vim.fn.expand(options.vault_path) .. " -name '*" .. link_text .. "*.md' -type f -not -path '*/.*'"
         local found_files = vim.fn.systemlist(find_cmd)
         if #found_files > 0 then
           file_path = found_files[1]
@@ -83,7 +85,8 @@ end
 
 function M.show_backlinks()
   local current_path = vim.fn.expand("%:p")
-  local vault_path = vim.fn.expand(config.options.vault_path)
+  local options = config.get_current_config()
+  local vault_path = vim.fn.expand(options.vault_path)
   
   -- Get relative path from vault root and remove .md extension
   local relative_path = current_path:gsub("^" .. vim.pesc(vault_path) .. "/", ""):gsub("%.md$", "")
@@ -136,7 +139,7 @@ function M.show_backlinks()
     actions = {
       ["default"] = function(selected)
         if selected and #selected > 0 then
-          local file_path = vim.fn.expand(config.options.vault_path .. "/" .. selected[1])
+          local file_path = vim.fn.expand(options.vault_path .. "/" .. selected[1])
           vim.cmd("edit " .. vim.fn.fnameescape(file_path))
         end
       end,

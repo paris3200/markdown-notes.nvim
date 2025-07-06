@@ -6,7 +6,8 @@ local M = {}
 function M.open_daily_note(offset)
   offset = offset or 0
   local date = os.date("%Y-%m-%d", os.time() + (offset * 86400))
-  local file_path = vim.fn.expand(config.options.dailies_path .. "/" .. date .. ".md")
+  local options = config.get_current_config()
+  local file_path = vim.fn.expand(options.dailies_path .. "/" .. date .. ".md")
   
   -- Create directory if it doesn't exist
   local dir = vim.fn.fnamemodify(file_path, ":h")
@@ -16,7 +17,7 @@ function M.open_daily_note(offset)
   
   -- Create file with template if it doesn't exist
   if vim.fn.filereadable(file_path) == 0 then
-    local template_path = vim.fn.expand(config.options.templates_path .. "/Daily.md")
+    local template_path = vim.fn.expand(options.templates_path .. "/Daily.md")
     if vim.fn.filereadable(template_path) == 1 then
       local template_content = vim.fn.readfile(template_path)
       local custom_vars = {

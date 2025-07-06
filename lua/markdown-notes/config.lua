@@ -18,6 +18,9 @@ M.defaults = {
     tomorrow = function() return os.date("%Y-%m-%d", os.time() + 86400) end,
   },
   
+  -- Default workspace (optional)
+  default_workspace = nil,
+  
   -- Key mappings
   mappings = {
     daily_note_today = "<leader>od",
@@ -32,9 +35,13 @@ M.defaults = {
     search_tags = "<leader>og",
     show_backlinks = "<leader>ob",
     follow_link = "gf",
+    pick_workspace = "<leader>ow",
   },
 }
 
+M.workspaces = {}
+M.default_workspace = nil
+M.current_active_workspace = nil
 M.options = {}
 
 local function deep_extend(target, source)
@@ -61,6 +68,99 @@ function M.setup(opts)
       deep_extend(M.options, opts)
     end
   end
+  
+  -- Set default workspace if specified in config
+  if M.options.default_workspace then
+    M.default_workspace = M.options.default_workspace
+  end
+end
+
+function M.setup_workspace(name, opts)
+  local workspace_config
+  if vim and vim.tbl_deep_extend then
+    workspace_config = vim.tbl_deep_extend("force", M.defaults, opts or {})
+  else
+    workspace_config = {}
+    for k, v in pairs(M.defaults) do
+      workspace_config[k] = v
+    end
+    if opts then
+      deep_extend(workspace_config, opts)
+    end
+  end
+  M.workspaces[name] = workspace_config
+end
+
+local function ensure_active_workspace()
+  -- If no active workspace set, use default workspace
+  if M.current_active_workspace == nil then
+    if M.default_workspace and M.workspaces[M.default_workspace] then
+      M.current_active_workspace = M.default_workspace
+    else
+      -- Fall back to first configured workspace
+      for name, _ in pairs(M.workspaces) do
+        M.current_active_workspace = name
+        break
+      end
+      
+      -- If no workspaces configured, create a "default" workspace from base config
+      if M.current_active_workspace == nil then
+        M.workspaces["default"] = M.options
+        M.current_active_workspace = "default"
+      end
+    end
+  end
+  
+  -- Validate current active workspace still exists
+  if not M.workspaces[M.current_active_workspace] then
+    if M.default_workspace and M.workspaces[M.default_workspace] then
+      M.current_active_workspace = M.default_workspace
+    else
+      -- Fall back to first workspace
+      for name, _ in pairs(M.workspaces) do
+        M.current_active_workspace = name
+        break
+      end
+    end
+  end
+end
+
+function M.get_current_config(bufnr)
+  ensure_active_workspace()
+  -- Always return a workspace config (guaranteed to exist)
+  return M.workspaces[M.current_active_workspace], M.current_active_workspace
+end
+
+function M.get_workspaces()
+  return M.workspaces
+end
+
+function M.set_active_workspace(name)
+  if M.workspaces[name] then
+    M.current_active_workspace = name
+    return true
+  else
+    vim.notify("Workspace '" .. name .. "' not found", vim.log.levels.ERROR)
+    return false
+  end
+end
+
+function M.get_active_workspace()
+  return M.current_active_workspace
+end
+
+function M.set_default_workspace(name)
+  if M.workspaces[name] then
+    M.default_workspace = name
+    return true
+  else
+    vim.notify("Workspace '" .. name .. "' not found", vim.log.levels.ERROR)
+    return false
+  end
+end
+
+function M.get_default_workspace()
+  return M.default_workspace
 end
 
 return M

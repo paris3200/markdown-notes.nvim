@@ -3,16 +3,43 @@ local templates = require("markdown-notes.templates")
 local daily = require("markdown-notes.daily")
 local notes = require("markdown-notes.notes")
 local links = require("markdown-notes.links")
+local workspace = require("markdown-notes.workspace")
 
 local M = {}
 
 function M.setup(opts)
   config.setup(opts)
+  M.setup_keymaps()
+end
+
+function M.setup_workspace(name, opts)
+  config.setup_workspace(name, opts)
+  
+  -- If this is the first workspace and no default is set, make it the default
+  if not config.get_default_workspace() then
+    config.set_default_workspace(name)
+  end
+end
+
+function M.set_default_workspace(name)
+  return config.set_default_workspace(name)
+end
+
+function M.setup_keymaps()
   
   -- Set up key mappings
   local function map(mode, key, cmd, desc)
+    -- Use a wrapper that gets current workspace config at runtime
+    local function wrapped_cmd()
+      if type(cmd) == "function" then
+        return cmd()
+      else
+        return cmd
+      end
+    end
+    
     if config.options.mappings[key] then
-      vim.keymap.set(mode, config.options.mappings[key], cmd, { 
+      vim.keymap.set(mode, config.options.mappings[key], wrapped_cmd, { 
         noremap = true, 
         silent = true, 
         desc = desc 
@@ -41,6 +68,46 @@ function M.setup(opts)
   
   -- Tags
   map("n", "search_tags", notes.search_tags, "Search tags")
+  
+  -- Workspaces
+  map("n", "pick_workspace", workspace.pick_workspace, "Pick workspace")
+  
+  -- Workspace management commands
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspaceStatus", workspace.show_current_workspace, { desc = "Show current workspace" })
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspacePick", workspace.pick_workspace, { desc = "Pick workspace with fzf" })
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspaceSwitch", function(opts)
+    workspace.switch_to_workspace(opts.args)
+  end, { 
+    nargs = 1, 
+    desc = "Switch to workspace", 
+    complete = function()
+      local workspaces = config.get_workspaces()
+      local names = {}
+      for name, _ in pairs(workspaces) do
+        table.insert(names, name)
+      end
+      return names
+    end 
+  })
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspaceSetDefault", function(opts)
+    workspace.set_default_workspace(opts.args)
+  end, { 
+    nargs = 1, 
+    desc = "Set default workspace", 
+    complete = function()
+      local workspaces = config.get_workspaces()
+      local names = {}
+      for name, _ in pairs(workspaces) do
+        table.insert(names, name)
+      end
+      return names
+    end 
+  })
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspaceShowDefault", workspace.show_default_workspace, { desc = "Show default workspace" })
+  vim.api.nvim_create_user_command("MarkdownNotesWorkspaceActive", function()
+    local _, active = config.get_current_config()
+    vim.notify("Active workspace: " .. active, vim.log.levels.INFO)
+  end, { desc = "Show active workspace" })
 end
 
 return M

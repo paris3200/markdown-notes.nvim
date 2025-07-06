@@ -29,6 +29,7 @@ Features:
   templating
 - Templates: Flexible template system with variable substitution
 - Wiki-style Links: Create and follow `[[note-name]]` links between notes
+- Note Renaming: Rename notes and automatically update all references
 - Powerful Search: Find notes by filename or content, search tags
 - Backlinks: Discover which notes reference the current note
 - Workspaces: Support for multiple independent note vaults with manual switching
@@ -105,6 +106,7 @@ Default configuration: >
         search_tags = "<leader>og",
         show_backlinks = "<leader>ob",
         follow_link = "gf",
+        rename_note = "<leader>or",
       },
     })
 <
@@ -192,6 +194,15 @@ The plugin uses a simple, predictable workspace system:
 
 All plugin commands use the currently active workspace configuration.
 
+Commands~
+                                                  *markdown-notes-ex-commands*
+
+Note Management Commands~
+
+:MarkdownNotesRename [{name}]                      *:MarkdownNotesRename*
+    Rename current note and update all references. If {name} is not provided,
+    prompts for the new name. Shows confirmation dialog with file count.
+
 Workspace Management Commands~
                                            *markdown-notes-workspace-commands*
 The following commands are available for workspace management:
@@ -246,6 +257,10 @@ Links and Navigation~
 - `<leader>ob` - Show backlinks to the current note (with file preview)
   - Press `Enter` to open the selected note
   - Press `Ctrl+L` to insert a link to the note
+- `<leader>or` - Rename the current note and update all references
+  - Prompts for new name and shows confirmation with file count
+  - Updates all `[[wiki-links]]` and `[[link|display text]]` references
+  - Handles files in subdirectories and prevents partial matches
 
 Templates~
                                                       *markdown-notes-templates*
@@ -302,6 +317,13 @@ require("markdown-notes.links").follow_link()
                                                  *markdown-notes.show_backlinks*
 require("markdown-notes.links").show_backlinks()
     Show backlinks to the current note.
+
+                                                    *markdown-notes.rename_note*
+require("markdown-notes.links").rename_note(new_name)
+    Rename the current note and automatically update all wiki-style link 
+    references across the vault. Supports both `[[note]]` and `[[note|display]]`
+    formats. Shows confirmation dialog with file count before proceeding.
+    Handles files in subdirectories and prevents partial matches.
 
                                                  *markdown-notes.pick_template*
 require("markdown-notes.templates").pick_template()

@@ -75,19 +75,19 @@ require("markdown-notes").setup({
   
   -- Key mappings
   mappings = {
-    daily_note_today = "<leader>od",
-    daily_note_yesterday = "<leader>oy", 
-    daily_note_tomorrow = "<leader>ot",
-    new_note = "<leader>on",
-    new_note_from_template = "<leader>oc",
-    find_notes = "<leader>of",
-    search_notes = "<leader>os",
-    insert_link = "<leader>ol",
-    insert_template = "<leader>op",
-    search_tags = "<leader>og",
-    show_backlinks = "<leader>ob",
+    daily_note_today = "<leader>nd",
+    daily_note_yesterday = "<leader>ny", 
+    daily_note_tomorrow = "<leader>nt",
+    new_note = "<leader>nn",
+    new_note_from_template = "<leader>nc",
+    find_notes = "<leader>nf",
+    search_notes = "<leader>ns",
+    insert_link = "<leader>nl",
+    insert_template = "<leader>np",
+    search_tags = "<leader>ng",
+    show_backlinks = "<leader>nb",
     follow_link = "gf",
-    rename_note = "<leader>or",
+    rename_note = "<leader>nr",
   },
 })
 ```
@@ -134,7 +134,7 @@ require("markdown-notes").setup_workspace("personal", {
 The plugin uses a simple, predictable workspace system:
 
 - **Default workspace**: Set via `default_workspace` in config, or first workspace configured becomes default
-- **Manual switching**: Use `<leader>ow` or commands to switch active workspace  
+- **Manual switching**: Use `<leader>nw` or commands to switch active workspace  
 - **Persistent**: All operations use the active workspace until you manually switch
 
 ### Commands
@@ -206,43 +206,43 @@ notes.setup_workspace("personal", {
 
 ### Daily Notes
 
-- `<leader>od` - Open today's daily note
-- `<leader>oy` - Open yesterday's daily note
-- `<leader>ot` - Open tomorrow's daily note
+- `<leader>nd` - Open today's daily note
+- `<leader>ny` - Open yesterday's daily note
+- `<leader>nt` - Open tomorrow's daily note
 
 Daily notes are automatically created with your `Daily.md` template if it exists.
 
 ### Note Management
 
-- `<leader>on` - Create a new note (uses default template if configured, otherwise basic frontmatter)
-- `<leader>oc` - Create a new note from template (choose template interactively)
-- `<leader>of` - Find and open existing notes with file preview
-- `<leader>os` - Search within note contents with syntax highlighting
+- `<leader>nn` - Create a new note (uses default template if configured, otherwise basic frontmatter)
+- `<leader>nc` - Create a new note from template (choose template interactively)
+- `<leader>nf` - Find and open existing notes with file preview
+- `<leader>ns` - Search within note contents with syntax highlighting
 
 ### Links and Navigation
 
-- `<leader>ol` - Search for a note and insert a `[[wiki-link]]`
+- `<leader>nl` - Search for a note and insert a `[[wiki-link]]`
   - Press `Enter` to open the selected note
   - Press `Ctrl+L` to insert a link to the note
 - `gf` - Follow the link under cursor
-- `<leader>ob` - Show backlinks to the current note with file preview
+- `<leader>nb` - Show backlinks to the current note with file preview
   - Press `Enter` to open the selected note
   - Press `Ctrl+L` to insert a link to the note
-- `<leader>or` - Rename the current note and update all references
+- `<leader>nr` - Rename the current note and update all references
   - Prompts for new name and shows confirmation with file count
   - Updates all `[[wiki-links]]` and `[[link|display text]]` references
   - Handles files in subdirectories and prevents partial matches
 
 ### Templates
 
-- `<leader>op` - Insert a template at cursor position with file preview
+- `<leader>np` - Insert a template at cursor position with file preview
 - Templates support variable substitution with `{{variable}}` syntax
 - Configure `default_template` to automatically apply a template to new notes
 
 ### Tags
 
-- `<leader>og` - Search for tags from frontmatter (YAML tags: [tag1, tag2])
-- `<leader>ow` - Pick workspace with fuzzy finder
+- `<leader>ng` - Search for tags from frontmatter (YAML tags: [tag1, tag2])
+- `<leader>nw` - Pick workspace with fuzzy finder
   - Shows tag list with file counts
   - Select a tag to view files containing that tag with preview
 

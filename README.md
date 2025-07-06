@@ -10,6 +10,7 @@ A simple, configurable markdown note-taking plugin for Neovim with support for d
 - **Wiki-style Links**: Create and follow `[[note-name]]` links between notes
 - **Powerful Search**: Find notes by filename or content, search frontmatter tags with syntax highlighting
 - **Backlinks**: Discover which notes reference the current note
+- **Workspaces**: Support for multiple independent note vaults with manual switching
 - **Configurable**: Customize paths, keybindings, and behavior
 
 ## Requirements
@@ -89,6 +90,112 @@ require("markdown-notes").setup({
 })
 ```
 
+## Workspaces
+
+Workspaces allow you to manage multiple independent note vaults simultaneously. Each workspace has its own configuration for paths, templates, and settings. You can set a default workspace and manually switch between them as needed.
+
+### Workspace Setup
+
+```lua
+-- Basic plugin setup with default workspace
+require("markdown-notes").setup({
+  vault_path = "~/notes",
+  templates_path = "~/notes/templates",
+  default_workspace = "personal", -- Optional: specify which workspace to use by default
+})
+
+-- Set up work workspace
+require("markdown-notes").setup_workspace("work", {
+  vault_path = "~/work-notes",
+  templates_path = "~/work-notes/templates",
+  dailies_path = "~/work-notes/dailies",
+  notes_subdir = "projects",
+  default_template = "work-note",
+  template_vars = {
+    -- Custom variables for work notes
+    project = function() return "Current Project" end,
+  },
+})
+
+-- Set up personal workspace
+require("markdown-notes").setup_workspace("personal", {
+  vault_path = "~/personal-notes",
+  templates_path = "~/personal-notes/templates", 
+  dailies_path = "~/personal-notes/journal",
+  notes_subdir = "thoughts",
+  default_template = "personal-note",
+})
+```
+
+### Workspace Behavior
+
+The plugin uses a simple, predictable workspace system:
+
+- **Default workspace**: Set via `default_workspace` in config, or first workspace configured becomes default
+- **Manual switching**: Use `<leader>ow` or commands to switch active workspace  
+- **Persistent**: All operations use the active workspace until you manually switch
+
+### Workspace Management Commands
+
+- `:MarkdownNotesWorkspaceStatus` - Show current workspace for the buffer
+- `:MarkdownNotesWorkspacePick` - Pick workspace with fuzzy finder
+- `:MarkdownNotesWorkspaceSwitch <name>` - Switch to a workspace directory
+
+### Multi-Vault Workflow
+
+With workspaces, you can:
+
+1. **Work on multiple projects simultaneously**: Have work notes open in one split and personal notes in another
+2. **Context-specific templates**: Use different templates for work vs personal notes
+3. **Separate organization**: Each workspace maintains its own directory structure and settings
+4. **Seamless switching**: All plugin commands automatically use the correct workspace configuration
+
+### Example Multi-Workspace Setup
+
+```lua
+-- ~/.config/nvim/lua/config/notes.lua
+local notes = require("markdown-notes")
+
+-- Base configuration
+notes.setup({
+  vault_path = "~/notes",
+  templates_path = "~/notes/templates",
+})
+
+-- Work workspace
+notes.setup_workspace("work", {
+  vault_path = "~/work/knowledge-base",
+  templates_path = "~/work/knowledge-base/templates",
+  dailies_path = "~/work/knowledge-base/daily-standups",
+  notes_subdir = "projects",
+  default_template = "work-note",
+  template_vars = {
+    sprint = function() return "Sprint-" .. os.date("%U") end,
+    standup_date = function() return os.date("%A, %B %d") end,
+  },
+})
+
+-- Research workspace  
+notes.setup_workspace("research", {
+  vault_path = "~/research/papers",
+  templates_path = "~/research/templates",
+  dailies_path = "~/research/lab-notes",
+  notes_subdir = "literature",
+  default_template = "research-paper",
+  template_vars = {
+    citation = function() return "[@author" .. os.date("%Y") .. "]" end,
+  },
+})
+
+-- Personal workspace
+notes.setup_workspace("personal", {
+  vault_path = "~/personal/journal",
+  templates_path = "~/personal/templates",
+  dailies_path = "~/personal/daily",
+  default_template = "journal-entry",
+})
+```
+
 ## Usage
 
 ### Daily Notes
@@ -125,6 +232,7 @@ Daily notes are automatically created with your `Daily.md` template if it exists
 ### Tags
 
 - `<leader>og` - Search for tags from frontmatter (YAML tags: [tag1, tag2])
+- `<leader>ow` - Pick workspace with fuzzy finder
   - Shows tag list with file counts
   - Select a tag to view files containing that tag with preview
 

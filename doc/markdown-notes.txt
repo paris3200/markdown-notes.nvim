@@ -7,14 +7,15 @@ CONTENTS                                                *markdown-notes-contents
 2. Requirements                                      |markdown-notes-requirements|
 3. Installation                                      |markdown-notes-installation|
 4. Configuration                                     |markdown-notes-configuration|
-5. Usage                                             |markdown-notes-usage|
-6. Commands                                          |markdown-notes-commands|
-7. Note Naming                                       |markdown-notes-note-naming|
-8. Template Variables                                |markdown-notes-template-vars|
-9. Directory Structure                               |markdown-notes-directory|
-10. Link Formats                                     |markdown-notes-link-formats|
-11. Troubleshooting                                  |markdown-notes-troubleshooting|
-12. API                                              |markdown-notes-api|
+5. Workspaces                                        |markdown-notes-workspaces|
+6. Usage                                             |markdown-notes-usage|
+7. Commands                                          |markdown-notes-commands|
+8. Note Naming                                       |markdown-notes-note-naming|
+9. Template Variables                                |markdown-notes-template-vars|
+10. Directory Structure                              |markdown-notes-directory|
+11. Link Formats                                     |markdown-notes-link-formats|
+12. Troubleshooting                                  |markdown-notes-troubleshooting|
+13. API                                              |markdown-notes-api|
 
 ==============================================================================
 INTRODUCTION                                        *markdown-notes-introduction*
@@ -30,6 +31,7 @@ Features:
 - Wiki-style Links: Create and follow `[[note-name]]` links between notes
 - Powerful Search: Find notes by filename or content, search tags
 - Backlinks: Discover which notes reference the current note
+- Workspaces: Support for multiple independent note vaults with manual switching
 - Configurable: Customize paths, keybindings, and behavior
 
 ==============================================================================
@@ -142,6 +144,80 @@ mappings~
     Table of key mappings (see |markdown-notes-commands|).
 
 ==============================================================================
+WORKSPACES                                              *markdown-notes-workspaces*
+
+Workspaces allow you to manage multiple independent note vaults simultaneously. 
+Each workspace has its own configuration for paths, templates, and settings. 
+You can set a default workspace and manually switch between them as needed.
+
+Workspace Setup~
+                                               *markdown-notes-workspace-setup*
+Basic workspace configuration: >
+    -- Basic plugin setup
+    require("markdown-notes").setup({
+      -- Default configuration (fallback when no workspace is detected)
+      vault_path = "~/default-notes",
+      templates_path = "~/default-notes/templates",
+    })
+    
+    -- Set up work workspace
+    require("markdown-notes").setup_workspace("work", {
+      vault_path = "~/work-notes",
+      templates_path = "~/work-notes/templates",
+      dailies_path = "~/work-notes/dailies",
+      notes_subdir = "projects",
+      default_template = "work-note",
+      template_vars = {
+        project = function() return "Current Project" end,
+      },
+    })
+    
+    -- Set up personal workspace
+    require("markdown-notes").setup_workspace("personal", {
+      vault_path = "~/personal-notes",
+      templates_path = "~/personal-notes/templates",
+      dailies_path = "~/personal-notes/journal",
+      notes_subdir = "thoughts",
+      default_template = "personal-note",
+    })
+<
+
+Workspace Behavior~
+                                          *markdown-notes-workspace-behavior*
+The plugin uses a simple, predictable workspace system:
+
+- **Default workspace**: Set via `default_workspace` in config, or first workspace configured becomes default
+- **Manual switching**: Use `<leader>ow` or commands to switch active workspace  
+- **Persistent**: All operations use the active workspace until you manually switch
+
+All plugin commands use the currently active workspace configuration.
+
+Workspace Management Commands~
+                                           *markdown-notes-workspace-commands*
+The following commands are available for workspace management:
+
+:MarkdownNotesWorkspaceStatus                 *:MarkdownNotesWorkspaceStatus*
+    Show current workspace for the buffer
+
+:MarkdownNotesWorkspacePick                   *:MarkdownNotesWorkspacePick*
+    Pick workspace with fuzzy finder
+
+:MarkdownNotesWorkspaceSwitch {name}          *:MarkdownNotesWorkspaceSwitch*
+    Switch to a workspace directory. Tab completion available.
+
+Multi-Vault Workflow~
+                                            *markdown-notes-multi-vault-workflow*
+With workspaces, you can:
+
+1. Work on multiple projects simultaneously: Have work notes open in one split 
+   and personal notes in another
+2. Context-specific templates: Use different templates for work vs personal notes
+3. Separate organization: Each workspace maintains its own directory structure 
+   and settings
+4. Consistent behavior: All plugin commands use the active workspace 
+   configuration
+
+==============================================================================
 USAGE                                                      *markdown-notes-usage*
 
 Daily Notes~
@@ -179,6 +255,7 @@ Templates~
 Tags~
                                                            *markdown-notes-tags*
 - `<leader>og` - Search for tags in frontmatter (YAML format: `tags: [tag1, tag2]`)
+- `<leader>ow` - Pick workspace with fuzzy finder
   - Shows tag list with file counts
   - Select a tag to view files containing that tag with preview
 
@@ -398,6 +475,11 @@ require("markdown-notes").setup({opts})
     Setup function to configure the plugin. See |markdown-notes-configuration|
     for available options.
 
+                                                *markdown-notes.setup_workspace*
+require("markdown-notes").setup_workspace(name, {opts})
+    Setup a workspace with the given name and configuration options. See 
+    |markdown-notes-workspaces| for details and examples.
+
 The plugin exposes the following modules:
 
                                                   *markdown-notes.config*
@@ -419,6 +501,10 @@ require("markdown-notes.links")
                                                *markdown-notes.templates*
 require("markdown-notes.templates")
     Template system and variable substitution.
+
+                                               *markdown-notes.workspace*
+require("markdown-notes.workspace")
+    Workspace management and switching functionality.
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:

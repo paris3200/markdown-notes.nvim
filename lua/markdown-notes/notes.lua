@@ -5,6 +5,7 @@ local M = {}
 
 function M.create_new_note()
   local title = vim.fn.input("Note title (optional): ")
+  local options = config.get_current_config()
   
   -- Generate timestamp-based filename
   local timestamp = tostring(os.time())
@@ -14,7 +15,7 @@ function M.create_new_note()
     filename = timestamp .. "-" .. clean_title
   end
   
-  local file_path = vim.fn.expand(config.options.vault_path .. "/" .. config.options.notes_subdir .. "/" .. filename .. ".md")
+  local file_path = vim.fn.expand(options.vault_path .. "/" .. options.notes_subdir .. "/" .. filename .. ".md")
   
   -- Create directory if needed
   local dir = vim.fn.fnamemodify(file_path, ":h")
@@ -27,12 +28,12 @@ function M.create_new_note()
   local display_title = title ~= "" and title or "Untitled"
   
   -- Use default template if configured, otherwise use basic frontmatter
-  if config.options.default_template then
+  if options.default_template then
     local custom_vars = {
       title = display_title,
       note_title = display_title,
     }
-    if not templates.apply_template_to_file(config.options.default_template, custom_vars) then
+    if not templates.apply_template_to_file(options.default_template, custom_vars) then
       -- Fall back to basic frontmatter if template fails
       local frontmatter = {
         "---",
@@ -64,6 +65,7 @@ end
 
 function M.create_from_template()
   local title = vim.fn.input("Note title (optional): ")
+  local options = config.get_current_config()
   
   -- Generate timestamp-based filename
   local timestamp = tostring(os.time())
@@ -73,7 +75,7 @@ function M.create_from_template()
     filename = timestamp .. "-" .. clean_title
   end
   
-  local file_path = vim.fn.expand(config.options.vault_path .. "/" .. config.options.notes_subdir .. "/" .. filename .. ".md")
+  local file_path = vim.fn.expand(options.vault_path .. "/" .. options.notes_subdir .. "/" .. filename .. ".md")
   
   -- Create directory if needed
   local dir = vim.fn.fnamemodify(file_path, ":h")
@@ -94,7 +96,7 @@ function M.create_from_template()
   
   fzf.files({
     prompt = "Select Template> ",
-    cwd = vim.fn.expand(config.options.templates_path),
+    cwd = vim.fn.expand(options.templates_path),
     cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
     file_icons = false,
     path_shorten = false,
@@ -121,10 +123,11 @@ function M.find_notes()
     vim.notify("fzf-lua not available", vim.log.levels.ERROR)
     return
   end
+  local options = config.get_current_config()
   
   fzf.files({
     prompt = "Find Notes> ",
-    cwd = vim.fn.expand(config.options.vault_path),
+    cwd = vim.fn.expand(options.vault_path),
     cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
     previewer = "builtin",
   })
@@ -136,10 +139,11 @@ function M.search_notes()
     vim.notify("fzf-lua not available", vim.log.levels.ERROR)
     return
   end
+  local options = config.get_current_config()
   
   fzf.grep({
     prompt = "Search Notes> ",
-    cwd = vim.fn.expand(config.options.vault_path),
+    cwd = vim.fn.expand(options.vault_path),
     previewer = "builtin",
   })
 end
@@ -150,8 +154,9 @@ function M.search_tags()
     vim.notify("fzf-lua not available", vim.log.levels.ERROR)
     return
   end
+  local options = config.get_current_config()
   
-  local vault_path = vim.fn.expand(config.options.vault_path)
+  local vault_path = vim.fn.expand(options.vault_path)
   
   -- Get all markdown files
   local find_cmd = "find " .. vim.fn.shellescape(vault_path) .. " -name '*.md' -type f -not -path '*/.*'"

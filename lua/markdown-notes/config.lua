@@ -35,6 +35,7 @@ M.defaults = {
     search_tags = "<leader>og",
     show_backlinks = "<leader>ob",
     follow_link = "gf",
+    rename_note = "<leader>or",
     pick_workspace = "<leader>ow",
   },
 }

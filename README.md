@@ -1,35 +1,82 @@
-# markdown-notes.nvim
+# 📝 markdown-notes.nvim
 
-A simple, configurable markdown note-taking plugin for Neovim with support for daily notes, templates, wiki-style linking, and powerful search capabilities.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Neovim](https://img.shields.io/badge/Neovim-0.8+-green.svg)](https://neovim.io/)
 
-## Features
+**A powerful, lightweight markdown note-taking plugin for Neovim that transforms your editor into a comprehensive knowledge management system.**
 
-- **Daily Notes**: Quick creation and navigation of daily notes with automatic templating
-- **Template-based Note Creation**: Create notes with default templates or choose from available templates
-- **Templates**: Flexible template system with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
-- **Wiki-style Links**: Create and follow `[[note-name]]` links between notes
-- **Note Renaming**: Rename notes and automatically update all references across your vault
-- **Powerful Search**: Find notes by filename or content, search frontmatter tags with syntax highlighting
-- **Backlinks**: Discover which notes reference the current note
-- **Workspaces**: Support for multiple independent note vaults with manual switching
-- **Configurable**: Customize paths, keybindings, and behavior
+Perfect for developers, researchers, and knowledge workers who want to seamlessly integrate note-taking into their Neovim workflow.
 
-## Requirements
+## 📋 Table of Contents
 
-- Neovim >= 0.8.0
-- [fzf-lua](https://github.com/ibhagwan/fzf-lua) for fuzzy finding
-- [marksman](https://github.com/artempyanykh/marksman) LSP (optional, for enhanced link completion)
+- [✨ Quick Start](#-quick-start)
+- [🚀 Features](#-features)
+- [📦 Installation](#-installation)
+- [⚙️ Basic Configuration](#️-basic-configuration)
+- [📖 Usage Guide](#-usage-guide)
+- [🔧 Advanced Configuration](#-advanced-configuration)
+- [📄 Template System](#-template-system)
+- [🛠️ Troubleshooting](#️-troubleshooting)
+- [🤝 Contributing](#-contributing)
+- [📜 License](#-license)
 
-## Installation
+## ✨ Quick Start
 
-### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+**1. Install with your favorite plugin manager:**
+
+```lua
+-- lazy.nvim
+{
+  "paris3200/markdown-notes.nvim",
+  dependencies = { "ibhagwan/fzf-lua" },
+  config = true,
+}
+```
+
+**2. Start taking notes immediately:**
+- `<leader>nd` - Create today's daily note
+- `<leader>nn` - Create a new note
+- `<leader>nf` - Find existing notes
+- `<leader>ns` - Search note contents
+
+**3. Create your first template** (optional):
+```bash
+mkdir -p ~/notes/templates
+echo "# {{title}}\n\nCreated: {{date}}" > ~/notes/templates/basic.md
+```
+
+That's it! You're ready to start building your knowledge base.
+
+## 🚀 Features
+
+### Core Features
+- **📅 Daily Notes** - Quick creation and navigation with automatic templating
+- **📝 Template System** - Flexible templates with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
+- **🔗 Wiki-style Links** - Create and follow `[[note-name]]` links between notes
+- **🔄 Smart Renaming** - Rename notes and automatically update all references
+- **🔍 Powerful Search** - Find notes by filename or content with syntax highlighting
+- **↩️ Backlinks** - Discover which notes reference the current note
+
+### Advanced Features
+- **🏢 Multi-Workspace Support** - Manage multiple independent note vaults
+- **🏷️ Tag Management** - Search and organize by frontmatter tags
+- **⚡ High Performance** - Built for speed with fuzzy finding via fzf-lua
+- **🎨 Highly Configurable** - Customize paths, keybindings, and behavior
+
+## 📦 Installation
+
+### Requirements
+- **Neovim >= 0.8.0**
+- **[fzf-lua](https://github.com/ibhagwan/fzf-lua)** - Required for fuzzy finding
+
+### Plugin Managers
+
+#### [lazy.nvim](https://github.com/folke/lazy.nvim) (Recommended)
 
 ```lua
 {
   "paris3200/markdown-notes.nvim",
-  dependencies = {
-    "ibhagwan/fzf-lua",
-  },
+  dependencies = { "ibhagwan/fzf-lua" },
   config = function()
     require("markdown-notes").setup({
       -- your configuration here
@@ -38,7 +85,7 @@ A simple, configurable markdown note-taking plugin for Neovim with support for d
 }
 ```
 
-### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
+#### [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
 use {
@@ -50,18 +97,147 @@ use {
 }
 ```
 
-## Configuration
+#### [vim-plug](https://github.com/junegunn/vim-plug)
 
-Default configuration:
+```vim
+Plug 'ibhagwan/fzf-lua'
+Plug 'paris3200/markdown-notes.nvim'
+
+" In your init.lua or after/plugin/markdown-notes.lua
+lua require("markdown-notes").setup()
+```
+
+## ⚙️ Basic Configuration
+
+The plugin works out of the box with sensible defaults. Here's a minimal setup:
 
 ```lua
 require("markdown-notes").setup({
-  vault_path = "~/repos/notes",
-  templates_path = "~/repos/notes/sys/templates",
-  dailies_path = "~/repos/notes/personal/dailies/2025",
-  weekly_path = "~/repos/notes/personal/weekly",
+  vault_path = "~/notes",                    -- Where your notes live
+  templates_path = "~/notes/templates",      -- Where your templates live
+  dailies_path = "~/notes/daily",           -- Where daily notes go
+})
+```
+
+### Key Mappings (Default)
+
+All keybindings use `<leader>n` as the prefix for easy discovery:
+
+| Keybinding | Action | Description |
+|------------|--------|-------------|
+| `<leader>nd` | Daily note (today) | Create/open today's daily note |
+| `<leader>ny` | Daily note (yesterday) | Open yesterday's daily note |
+| `<leader>nt` | Daily note (tomorrow) | Open tomorrow's daily note |
+| `<leader>nn` | New note | Create a new note |
+| `<leader>nc` | New note from template | Create note with template selection |
+| `<leader>nf` | Find notes | Search and open existing notes |
+| `<leader>ns` | Search notes | Search within note contents |
+| `<leader>nl` | Insert link | Search for note and insert wiki-link |
+| `<leader>np` | Insert template | Insert template at cursor |
+| `<leader>ng` | Search tags | Find notes by frontmatter tags |
+| `<leader>nb` | Show backlinks | Show notes linking to current note |
+| `<leader>nr` | Rename note | Rename note and update all references |
+| `<leader>nw` | Pick workspace | Switch between workspaces |
+| `gf` | Follow link | Follow link under cursor |
+
+> **💡 Tip:** All keybindings can be customized in your configuration.
+
+## 📖 Usage Guide
+
+### Getting Started with Daily Notes
+
+Daily notes are the heart of many note-taking workflows. Start your day by creating today's note:
+
+```
+<leader>nd  →  Creates/opens today's daily note (e.g., 2025-01-15.md)
+```
+
+If you have a `Daily.md` template, it will be automatically applied. Otherwise, a basic note with frontmatter is created.
+
+### Creating and Managing Notes
+
+#### Basic Note Creation
+```
+<leader>nn  →  Create a new note with your default template
+<leader>nc  →  Choose from available templates
+```
+
+#### Finding and Searching
+```
+<leader>nf  →  Fuzzy find notes by filename (with live preview)
+<leader>ns  →  Search inside note contents (with syntax highlighting)
+<leader>ng  →  Search by frontmatter tags
+```
+
+### Working with Links
+
+#### Creating Links Between Notes
+```
+<leader>nl  →  Search for a note and insert [[wiki-link]]
+               Press Ctrl+L to just insert the link
+               Press Enter to open the note
+```
+
+#### Following and Managing Links
+```
+gf          →  Follow the link under cursor
+<leader>nb  →  Show all notes that link to current note (backlinks)
+<leader>nr  →  Rename current note and update all references
+```
+
+### Using Templates
+
+Templates make your notes consistent and save time:
+
+```
+<leader>np  →  Insert template at cursor position
+```
+
+**Example template** (`~/notes/templates/meeting.md`):
+```markdown
+---
+title: {{title}}
+date: {{date}}
+tags: [meetings]
+---
+
+# {{title}}
+
+**Date:** {{datetime}}
+**Attendees:** 
+
+## Agenda
+
+## Notes
+
+## Action Items
+- [ ] 
+```
+
+### Command Reference
+
+| Command | Description |
+|---------|-------------|
+| `:MarkdownNotesRename [name]` | Rename current note and update references |
+| `:MarkdownNotesWorkspaceStatus` | Show current workspace |
+| `:MarkdownNotesWorkspacePick` | Switch workspace with fuzzy finder |
+| `:MarkdownNotesWorkspaceSwitch <name>` | Switch to specific workspace |
+
+## 🔧 Advanced Configuration
+
+### Custom Configuration Options
+
+```lua
+require("markdown-notes").setup({
+  -- Core paths
+  vault_path = "~/notes",
+  templates_path = "~/notes/templates",
+  dailies_path = "~/notes/daily",
+  weekly_path = "~/notes/weekly",
   notes_subdir = "notes",
-  default_template = nil, -- Optional: default template for new notes (e.g., "note")
+  
+  -- Template settings
+  default_template = "basic", -- Auto-apply this template to new notes
   
   -- Custom template variables
   template_vars = {
@@ -71,9 +247,12 @@ require("markdown-notes").setup({
     title = function() return vim.fn.expand("%:t:r") end,
     yesterday = function() return os.date("%Y-%m-%d", os.time() - 86400) end,
     tomorrow = function() return os.date("%Y-%m-%d", os.time() + 86400) end,
+    -- Add your own custom variables
+    author = function() return "Your Name" end,
+    project = function() return vim.fn.getcwd():match("([^/]+)$") end,
   },
   
-  -- Key mappings
+  -- Customize keybindings
   mappings = {
     daily_note_today = "<leader>nd",
     daily_note_yesterday = "<leader>ny", 
@@ -92,212 +271,220 @@ require("markdown-notes").setup({
 })
 ```
 
-## Workspaces
+### Multi-Workspace Configuration
 
-Workspaces allow you to manage multiple independent note vaults simultaneously. Each workspace has its own configuration for paths, templates, and settings. You can set a default workspace and manually switch between them as needed.
+Workspaces allow you to manage multiple independent note vaults simultaneously. Perfect for separating work notes, personal notes, and project-specific documentation.
 
-### Workspace Setup
+#### Setting Up Workspaces
 
 ```lua
--- Basic plugin setup with default workspace
+-- Base configuration (becomes your default workspace)
 require("markdown-notes").setup({
   vault_path = "~/notes",
   templates_path = "~/notes/templates",
-  default_workspace = "personal", -- Optional: specify which workspace to use by default
-})
-
--- Set up work workspace
-require("markdown-notes").setup_workspace("work", {
-  vault_path = "~/work-notes",
-  templates_path = "~/work-notes/templates",
-  dailies_path = "~/work-notes/dailies",
-  notes_subdir = "projects",
-  default_template = "work-note",
-  template_vars = {
-    -- Custom variables for work notes
-    project = function() return "Current Project" end,
-  },
-})
-
--- Set up personal workspace
-require("markdown-notes").setup_workspace("personal", {
-  vault_path = "~/personal-notes",
-  templates_path = "~/personal-notes/templates", 
-  dailies_path = "~/personal-notes/journal",
-  notes_subdir = "thoughts",
-  default_template = "personal-note",
-})
-```
-
-### Workspace Behavior
-
-The plugin uses a simple, predictable workspace system:
-
-- **Default workspace**: Set via `default_workspace` in config, or first workspace configured becomes default
-- **Manual switching**: Use `<leader>nw` or commands to switch active workspace  
-- **Persistent**: All operations use the active workspace until you manually switch
-
-### Commands
-
-**Note Management:**
-- `:MarkdownNotesRename [name]` - Rename current note and update all references (prompts if no name provided)
-
-**Workspace Management:**
-- `:MarkdownNotesWorkspaceStatus` - Show current workspace for the buffer
-- `:MarkdownNotesWorkspacePick` - Pick workspace with fuzzy finder
-- `:MarkdownNotesWorkspaceSwitch <name>` - Switch to a workspace directory
-
-### Multi-Vault Workflow
-
-With workspaces, you can:
-
-1. **Work on multiple projects simultaneously**: Have work notes open in one split and personal notes in another
-2. **Context-specific templates**: Use different templates for work vs personal notes
-3. **Separate organization**: Each workspace maintains its own directory structure and settings
-4. **Seamless switching**: All plugin commands automatically use the correct workspace configuration
-
-### Example Multi-Workspace Setup
-
-```lua
--- ~/.config/nvim/lua/config/notes.lua
-local notes = require("markdown-notes")
-
--- Base configuration
-notes.setup({
-  vault_path = "~/notes",
-  templates_path = "~/notes/templates",
+  default_workspace = "personal", -- Optional: specify default
 })
 
 -- Work workspace
-notes.setup_workspace("work", {
-  vault_path = "~/work/knowledge-base",
-  templates_path = "~/work/knowledge-base/templates",
-  dailies_path = "~/work/knowledge-base/daily-standups",
-  notes_subdir = "projects",
+require("markdown-notes").setup_workspace("work", {
+  vault_path = "~/work-notes",
+  templates_path = "~/work-notes/templates",
+  dailies_path = "~/work-notes/standups",
   default_template = "work-note",
   template_vars = {
+    project = function() return "Current Project" end,
     sprint = function() return "Sprint-" .. os.date("%U") end,
-    standup_date = function() return os.date("%A, %B %d") end,
   },
 })
 
--- Research workspace  
-notes.setup_workspace("research", {
+-- Research workspace
+require("markdown-notes").setup_workspace("research", {
   vault_path = "~/research/papers",
   templates_path = "~/research/templates",
   dailies_path = "~/research/lab-notes",
-  notes_subdir = "literature",
   default_template = "research-paper",
-  template_vars = {
-    citation = function() return "[@author" .. os.date("%Y") .. "]" end,
-  },
-})
-
--- Personal workspace
-notes.setup_workspace("personal", {
-  vault_path = "~/personal/journal",
-  templates_path = "~/personal/templates",
-  dailies_path = "~/personal/daily",
-  default_template = "journal-entry",
 })
 ```
 
-## Usage
+#### Workspace Workflow
 
-### Daily Notes
+- **Switch workspaces**: Use `<leader>nw` to pick from available workspaces
+- **Persistent context**: All commands use the active workspace until you switch
+- **Independent settings**: Each workspace has its own paths, templates, and variables
 
-- `<leader>nd` - Open today's daily note
-- `<leader>ny` - Open yesterday's daily note
-- `<leader>nt` - Open tomorrow's daily note
-
-Daily notes are automatically created with your `Daily.md` template if it exists.
-
-### Note Management
-
-- `<leader>nn` - Create a new note (uses default template if configured, otherwise basic frontmatter)
-- `<leader>nc` - Create a new note from template (choose template interactively)
-- `<leader>nf` - Find and open existing notes with file preview
-- `<leader>ns` - Search within note contents with syntax highlighting
-
-### Links and Navigation
-
-- `<leader>nl` - Search for a note and insert a `[[wiki-link]]`
-  - Press `Enter` to open the selected note
-  - Press `Ctrl+L` to insert a link to the note
-- `gf` - Follow the link under cursor
-- `<leader>nb` - Show backlinks to the current note with file preview
-  - Press `Enter` to open the selected note
-  - Press `Ctrl+L` to insert a link to the note
-- `<leader>nr` - Rename the current note and update all references
-  - Prompts for new name and shows confirmation with file count
-  - Updates all `[[wiki-links]]` and `[[link|display text]]` references
-  - Handles files in subdirectories and prevents partial matches
-
-### Templates
-
-- `<leader>np` - Insert a template at cursor position with file preview
-- Templates support variable substitution with `{{variable}}` syntax
-- Configure `default_template` to automatically apply a template to new notes
-
-### Tags
-
-- `<leader>ng` - Search for tags from frontmatter (YAML tags: [tag1, tag2])
-- `<leader>nw` - Pick workspace with fuzzy finder
-  - Shows tag list with file counts
-  - Select a tag to view files containing that tag with preview
-
-## Template Variables
-
-Available template variables:
-
-- `{{date}}` - Current date (YYYY-MM-DD)
-- `{{time}}` - Current time (HH:MM)
-- `{{datetime}}` - Current date and time
-- `{{title}}` - Current file name without extension
-- `{{note_title}}` - User-provided title when creating notes (same as `{{title}}` for note creation)
-- `{{yesterday}}` - Yesterday's date
-- `{{tomorrow}}` - Tomorrow's date
-
-Example template usage:
-```markdown
----
-title: {{title}}
-date: {{date}}
-tags: []
----
-
-# {{title}}
-
-Created on {{datetime}}
-```
-
-## Directory Structure
+### Directory Structure Example
 
 ```
-~/repos/notes/
-├── sys/
-│   └── templates/
-│       ├── Daily.md
-│       ├── Meeting.md
-│       └── Project.md
-├── personal/
-│   └── dailies/
-│       └── 2025/
-│           ├── 2025-01-01.md
-│           └── 2025-01-02.md
-└── notes/
+~/notes/                          # Main vault
+├── templates/                    # Your templates
+│   ├── Daily.md                 # Auto-applied to daily notes
+│   ├── meeting.md               # Meeting template
+│   └── project.md               # Project template
+├── daily/                       # Daily notes
+│   ├── 2025-01-15.md
+│   └── 2025-01-16.md
+└── notes/                       # Regular notes
     ├── project-ideas.md
     └── learning-resources.md
 ```
 
-## Contributing
+## 📄 Template System
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+Templates are markdown files with special `{{variable}}` syntax that gets substituted when creating notes.
 
-## License
+### Built-in Template Variables
+
+| Variable | Output | Example |
+|----------|--------|---------|
+| `{{date}}` | Current date | `2025-01-15` |
+| `{{time}}` | Current time | `14:30` |
+| `{{datetime}}` | Date and time | `2025-01-15 14:30` |
+| `{{title}}` | File name without extension | `meeting-notes` |
+| `{{yesterday}}` | Yesterday's date | `2025-01-14` |
+| `{{tomorrow}}` | Tomorrow's date | `2025-01-16` |
+
+### Creating Custom Variables
+
+Add custom variables in your configuration:
+
+```lua
+require("markdown-notes").setup({
+  template_vars = {
+    author = function() return "Your Name" end,
+    project = function() return vim.fn.getcwd():match("([^/]+)$") end,
+    week = function() return os.date("Week %U") end,
+    uuid = function() return vim.fn.system("uuidgen"):gsub("\n", "") end,
+  },
+})
+```
+
+### Example Templates
+
+**Daily Note Template** (`templates/Daily.md`):
+```markdown
+---
+title: Daily Note - {{date}}
+date: {{date}}
+tags: [daily]
+---
+
+# {{date}} - Daily Notes
+
+## 🎯 Today's Goals
+- [ ] 
+
+## 📝 Notes
+
+## 🔄 Tomorrow's Prep
+- [ ] 
+```
+
+**Meeting Template** (`templates/meeting.md`):
+```markdown
+---
+title: {{title}}
+date: {{date}}
+tags: [meeting]
+attendees: []
+---
+
+# {{title}}
+
+**Date:** {{datetime}}  
+**Attendees:** 
+
+## 📋 Agenda
+
+## 📝 Discussion Notes
+
+## ✅ Action Items
+- [ ] 
+
+## 🔗 Links
+```
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### "fzf-lua not found" Error
+**Solution:** Install fzf-lua dependency:
+```lua
+-- lazy.nvim
+dependencies = { "ibhagwan/fzf-lua" }
+
+-- packer.nvim  
+requires = { "ibhagwan/fzf-lua" }
+```
+
+#### Templates Not Working
+**Checklist:**
+1. Verify `templates_path` exists and contains `.md` files
+2. Check template syntax uses `{{variable}}` (not `{variable}`)
+3. Ensure template file permissions are readable
+
+#### Links Not Following (`gf` not working)
+**Solution:** Ensure you're using the correct link format:
+- ✅ `[[note-name]]` or `[[note-name.md]]`
+- ❌ `[note-name](note-name.md)` (standard markdown links)
+
+#### Performance Issues with Large Vaults
+**Solutions:**
+- Use `.gitignore` to exclude non-note files from searches
+- Consider splitting large vaults into multiple workspaces
+- Ensure fzf-lua is properly configured
+
+### Debug Information
+
+Check your configuration:
+```lua
+:lua print(vim.inspect(require("markdown-notes").config))
+```
+
+Check current workspace:
+```
+:MarkdownNotesWorkspaceStatus
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Make** your changes
+4. **Test** your changes (run tests if applicable)
+5. **Commit** your changes (`git commit -m 'feat: add amazing feature'`)
+6. **Push** to the branch (`git push origin feature/amazing-feature`)
+7. **Open** a Pull Request
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/yourusername/markdown-notes.nvim.git
+cd markdown-notes.nvim
+
+# Run tests (requires plenary.nvim)
+nvim --headless -u tests/minimal_init.vim -c "lua require('plenary.test_harness').test_directory('tests')"
+```
+
+### Reporting Issues
+
+- Use GitHub Issues for bug reports and feature requests
+- Include your Neovim version and plugin configuration
+- Provide steps to reproduce the issue
+
+## 📜 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Happy note-taking! 📝**
+
+If you find this plugin useful, consider ⭐ starring the repository!
+
+</div>

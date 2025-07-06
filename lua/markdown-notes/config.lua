@@ -23,20 +23,20 @@ M.defaults = {
   
   -- Key mappings
   mappings = {
-    daily_note_today = "<leader>od",
-    daily_note_yesterday = "<leader>oy", 
-    daily_note_tomorrow = "<leader>ot",
-    new_note = "<leader>on",
-    new_note_from_template = "<leader>oc",
-    find_notes = "<leader>of",
-    search_notes = "<leader>os",
-    insert_link = "<leader>ol",
-    insert_template = "<leader>op",
-    search_tags = "<leader>og",
-    show_backlinks = "<leader>ob",
+    daily_note_today = "<leader>nd",
+    daily_note_yesterday = "<leader>ny", 
+    daily_note_tomorrow = "<leader>nt",
+    new_note = "<leader>nn",
+    new_note_from_template = "<leader>nc",
+    find_notes = "<leader>nf",
+    search_notes = "<leader>ns",
+    insert_link = "<leader>nl",
+    insert_template = "<leader>np",
+    search_tags = "<leader>ng",
+    show_backlinks = "<leader>nb",
     follow_link = "gf",
-    rename_note = "<leader>or",
-    pick_workspace = "<leader>ow",
+    rename_note = "<leader>nr",
+    pick_workspace = "<leader>nw",
   },
 }
 

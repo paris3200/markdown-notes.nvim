@@ -22,7 +22,9 @@ describe("notes", function()
 			local original_os = _G.os
 			local test_timestamp = 1720094400
 			_G.os = setmetatable({
-				time = function() return test_timestamp end
+				time = function()
+					return test_timestamp
+				end,
 			}, { __index = original_os })
 
 			-- Mock vim.fn.input to return empty string (no title)

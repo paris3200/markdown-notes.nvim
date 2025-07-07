@@ -162,7 +162,8 @@ function M.show_backlinks()
 	})
 end
 
-function M.rename_note(new_name)
+function M.rename_note(new_name, opts)
+	opts = opts or {}
 	local current_path = vim.fn.expand("%:p")
 	local options = config.get_current_config()
 	local vault_path = vim.fn.expand(options.vault_path)
@@ -256,19 +257,76 @@ function M.rename_note(new_name)
 		new_relative_path = current_dir_relative .. "/" .. new_name
 	end
 
-	-- Ask for confirmation
-	local message = "Rename '" .. relative_path .. "' to '" .. new_name .. "'"
-	if #files_to_update > 0 then
-		message = message .. " and update " .. #files_to_update .. " files with links?"
+	-- Show affected files and ask for confirmation
+	if #files_to_update > 0 and not opts.skip_ui and options.ui.show_rename_preview then
+		local ok, fzf = pcall(require, "fzf-lua")
+		if not ok then
+			vim.notify("fzf-lua not available", vim.log.levels.ERROR)
+			return
+		end
+
+		-- Show files that will be updated
+		local file_list = {}
+		for _, file_info in ipairs(files_to_update) do
+			table.insert(file_list, file_info.file)
+		end
+
+		fzf.fzf_exec(file_list, {
+			prompt = "Files to update (" .. #files_to_update .. ") - Enter to proceed > ",
+			cwd = vault_path,
+			previewer = "builtin",
+			actions = {
+				["default"] = function()
+					-- Proceed with rename
+					local confirm = vim.fn.confirm(
+						"Proceed with rename and update " .. #files_to_update .. " files?",
+						"&Yes\n&No",
+						2
+					)
+					if confirm == 1 then
+						M._perform_rename(
+							current_path,
+							new_file_path,
+							files_to_update,
+							relative_path,
+							new_relative_path,
+							update_count
+						)
+					end
+				end,
+			},
+		})
 	else
-		message = message .. "?"
+		-- Skip UI for tests or when no files to update
+		local message = "Rename '" .. relative_path .. "' to '" .. new_name .. "'"
+		if #files_to_update > 0 then
+			message = message .. " and update " .. #files_to_update .. " files?"
+		else
+			message = message .. "?"
+		end
+		local confirm = opts.skip_ui and 1 or vim.fn.confirm(message, "&Yes\n&No", 2)
+		if confirm == 1 then
+			M._perform_rename(
+				current_path,
+				new_file_path,
+				files_to_update,
+				relative_path,
+				new_relative_path,
+				update_count
+			)
+		end
 	end
+end
 
-	local confirm = vim.fn.confirm(message, "&Yes\n&No", 2)
-	if confirm ~= 1 then
-		return
-	end
-
+-- Helper function to perform the actual rename operation
+function M._perform_rename(
+	current_path,
+	new_file_path,
+	files_to_update,
+	relative_path,
+	new_relative_path,
+	update_count
+)
 	-- Update all linking files
 	for _, file_info in ipairs(files_to_update) do
 		local file_content = vim.fn.readfile(file_info.path)

@@ -48,7 +48,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename the note
-			links.rename_note("renamed-note")
+			links.rename_note("renamed-note", { skip_ui = true })
 
 			-- Check that the file was renamed
 			assert.is_true(vim.fn.filereadable(vault_path .. "/renamed-note.md") == 1)
@@ -75,7 +75,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename the note
-			links.rename_note("new-name")
+			links.rename_note("new-name", { skip_ui = true })
 
 			-- Check that the file was renamed
 			assert.is_true(vim.fn.filereadable(vault_path .. "/new-name.md") == 1)
@@ -105,7 +105,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename the note
-			links.rename_note("tech-guide")
+			links.rename_note("tech-guide", { skip_ui = true })
 
 			-- Check that the file was renamed
 			assert.is_true(vim.fn.filereadable(vault_path .. "/tech-guide.md") == 1)
@@ -136,7 +136,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename the note
-			links.rename_note("primary-topic")
+			links.rename_note("primary-topic", { skip_ui = true })
 
 			-- Check file was renamed
 			assert.is_true(vim.fn.filereadable(vault_path .. "/primary-topic.md") == 1)
@@ -169,7 +169,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Try to rename to existing file name
-			links.rename_note("existing")
+			links.rename_note("existing", { skip_ui = true })
 
 			-- Check that original file was not renamed
 			assert.is_true(vim.fn.filereadable(note_path) == 1)
@@ -201,7 +201,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename the note
-			links.rename_note("alpha-project")
+			links.rename_note("alpha-project", { skip_ui = true })
 
 			-- Check file was renamed in same directory
 			assert.is_true(vim.fn.filereadable(subdir .. "/alpha-project.md") == 1)
@@ -222,7 +222,7 @@ describe("links", function()
 			vim.cmd("edit " .. note_path)
 
 			-- Rename with .md extension
-			links.rename_note("new-name.md")
+			links.rename_note("new-name.md", { skip_ui = true })
 
 			-- Check that file was renamed without double extension
 			assert.is_true(vim.fn.filereadable(vault_path .. "/new-name.md") == 1)
@@ -250,7 +250,7 @@ describe("links", function()
 
 			-- Open and rename the "project" note
 			vim.cmd("edit " .. note_path)
-			links.rename_note("main-project")
+			links.rename_note("main-project", { skip_ui = true })
 
 			-- Check that files were renamed correctly
 			assert.is_true(vim.fn.filereadable(vault_path .. "/main-project.md") == 1)
@@ -271,8 +271,6 @@ describe("links", function()
 
 			-- Verify the similar link wasn't corrupted
 			assert.is_nil(final_content:find("[[main-project-archive]]", 1, true))
-
-			print("Final content:", final_content)
 		end)
 
 		it("handles very similar note names correctly", function()
@@ -287,7 +285,7 @@ describe("links", function()
 
 			-- Open and rename
 			vim.cmd("edit " .. note_path)
-			links.rename_note("new-api")
+			links.rename_note("new-api", { skip_ui = true })
 
 			-- Check final content
 			local final_content = table.concat(vim.fn.readfile(linking_note_path), "\n")
@@ -300,8 +298,6 @@ describe("links", function()
 
 			-- The old exact link should be gone
 			assert.is_nil(final_content:find("[[api]]", 1, true))
-
-			print("Very similar test result:", final_content)
 		end)
 
 		it("handles files with spaces in names", function()
@@ -314,7 +310,7 @@ describe("links", function()
 
 			-- Open and rename
 			vim.cmd("edit " .. vim.fn.fnameescape(note_path))
-			links.rename_note("new project name")
+			links.rename_note("new project name", { skip_ui = true })
 
 			-- Check results
 			assert.is_true(vim.fn.filereadable(vault_path .. "/new project name.md") == 1)
@@ -334,11 +330,11 @@ describe("links", function()
 			_G.notifications = {}
 
 			-- Test empty string
-			links.rename_note("")
+			links.rename_note("", { skip_ui = true })
 			assert.is_true(vim.fn.filereadable(note_path) == 1) -- Should still exist
 
 			-- Test whitespace only
-			links.rename_note("   ")
+			links.rename_note("   ", { skip_ui = true })
 			assert.is_true(vim.fn.filereadable(note_path) == 1) -- Should still exist
 
 			-- Should have error notifications
@@ -361,9 +357,9 @@ describe("links", function()
 			_G.notifications = {}
 
 			-- Test invalid characters
-			links.rename_note("test/invalid")
-			links.rename_note("test\\invalid")
-			links.rename_note("test:invalid")
+			links.rename_note("test/invalid", { skip_ui = true })
+			links.rename_note("test\\invalid", { skip_ui = true })
+			links.rename_note("test:invalid", { skip_ui = true })
 
 			-- File should still exist since rename should fail
 			assert.is_true(vim.fn.filereadable(note_path) == 1)
@@ -384,7 +380,7 @@ describe("links", function()
 			vim.cmd("enew")
 
 			-- Should handle gracefully without crashing
-			links.rename_note("test")
+			links.rename_note("test", { skip_ui = true })
 
 			-- Check for appropriate notification
 			assert.is_true(#_G.notifications > 0)
@@ -396,6 +392,45 @@ describe("links", function()
 				end
 			end
 			assert.is_true(found_warning)
+		end)
+
+		it("respects show_rename_preview config option", function()
+			-- Create a note with links
+			local note_path = vault_path .. "/original-note.md"
+			local linking_note_path = vault_path .. "/linking-note.md"
+
+			vim.fn.writefile({ "# Original Note" }, note_path)
+			vim.fn.writefile({ "Link to [[original-note]]" }, linking_note_path)
+
+			-- Test with show_rename_preview = false
+			local original_config = config.get_current_config()
+			local test_config = vim.deepcopy(original_config)
+			test_config.ui = test_config.ui or {}
+			test_config.ui.show_rename_preview = false
+
+			-- Mock the config to return our test config
+			local original_get_config = config.get_current_config
+			config.get_current_config = function()
+				return test_config
+			end
+
+			vim.cmd("edit " .. note_path)
+
+			-- This should use simple confirmation, not fzf-lua preview
+			-- Since we're using skip_ui=true, it should still work
+			links.rename_note("renamed-note", { skip_ui = true })
+
+			-- Verify the rename worked
+			assert.is_true(vim.fn.filereadable(vault_path .. "/renamed-note.md") == 1)
+			assert.is_true(vim.fn.filereadable(note_path) == 0)
+
+			-- Verify the link was updated
+			local updated_content = table.concat(vim.fn.readfile(linking_note_path), "\n")
+			assert.is_not_nil(updated_content:find("[[renamed-note]]", 1, true))
+			assert.is_nil(updated_content:find("[[original-note]]", 1, true))
+
+			-- Restore original config
+			config.get_current_config = original_get_config
 		end)
 	end)
 end)

@@ -53,7 +53,7 @@ That's it! You're ready to start building your knowledge base.
 - **📅 Daily Notes** - Quick creation and navigation with automatic templating
 - **📝 Template System** - Flexible templates with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
 - **🔗 Wiki-style Links** - Create and follow `[[note-name]]` links between notes
-- **🔄 Smart Renaming** - Rename notes and automatically update all references
+- **🔄 Smart Renaming** - Rename notes and automatically update all references with file preview
 - **🔍 Powerful Search** - Find notes by filename or content with syntax highlighting
 - **↩️ Backlinks** - Discover which notes reference the current note
 
@@ -136,7 +136,7 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>np` | Insert template | Insert template at cursor |
 | `<leader>ng` | Search tags | Find notes by frontmatter tags |
 | `<leader>nb` | Show backlinks | Show notes linking to current note |
-| `<leader>nr` | Rename note | Rename note and update all references |
+| `<leader>nr` | Rename note | Rename note and update all references with preview |
 | `<leader>nw` | Pick workspace | Switch between workspaces |
 | `gf` | Follow link | Follow link under cursor |
 
@@ -184,6 +184,14 @@ gf          →  Follow the link under cursor
 <leader>nb  →  Show all notes that link to current note (backlinks)
 <leader>nr  →  Rename current note and update all references
 ```
+
+**Smart Renaming**: When you rename a note that has links pointing to it, markdown-notes.nvim will:
+1. Show you a preview of all files that will be updated
+2. Let you browse through them with fzf-lua
+3. Update all `[[note-name]]` and `[[note-name|display text]]` references automatically
+4. Handle files in subdirectories correctly
+
+> **💡 Tip:** You can disable the preview and use a simple confirmation dialog by setting `ui.show_rename_preview = false` in your configuration.
 
 ### Using Templates
 
@@ -238,6 +246,11 @@ require("markdown-notes").setup({
   
   -- Template settings
   default_template = "basic", -- Auto-apply this template to new notes
+  
+  -- UI behavior
+  ui = {
+    show_rename_preview = true, -- Show file preview when renaming notes with links
+  },
   
   -- Custom template variables
   template_vars = {

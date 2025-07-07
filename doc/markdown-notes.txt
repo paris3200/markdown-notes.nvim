@@ -33,7 +33,7 @@ Core Features~
 - Daily Notes - Quick creation and navigation with automatic templating
 - Template System - Flexible templates with variable substitution
 - Wiki-style Links - Create and follow [[note-name]] links between notes
-- Smart Renaming - Rename notes and automatically update all references
+- Smart Renaming - Rename notes and automatically update all references with file preview
 - Powerful Search - Find notes by filename or content with syntax highlighting
 - Backlinks - Discover which notes reference the current note
 
@@ -158,8 +158,19 @@ Creating Links Between Notes: >
 Following and Managing Links: >
     gf          →  Follow the link under cursor
     <leader>nb  →  Show all notes that link to current note (backlinks)
-    <leader>nr  →  Rename current note and update all references
+    <leader>nr  →  Rename current note and update all references with preview
 <
+
+Smart Renaming~
+                                          *markdown-notes-usage-smart-renaming*
+When you rename a note that has links pointing to it, markdown-notes.nvim will:
+1. Show you a preview of all files that will be updated
+2. Let you browse through them with fzf-lua and file preview
+3. Update all `[[note-name]]` and `[[note-name|display text]]` references
+4. Handle files in subdirectories correctly
+
+You can disable the preview and use a simple confirmation dialog by setting
+`ui.show_rename_preview = false` in your configuration.
 
 Using Templates~
                                             *markdown-notes-usage-templates*
@@ -206,7 +217,7 @@ Note Management~
 Links and Navigation~
 `<leader>nl`        Search for note and insert wiki-link
 `<leader>nb`        Show notes linking to current note
-`<leader>nr`        Rename note and update all references
+`<leader>nr`        Rename note and update all references with preview
 `gf`                Follow link under cursor
 
 Templates and Tags~
@@ -234,6 +245,11 @@ Custom Configuration Options~
       
       -- Template settings
       default_template = "basic", -- Auto-apply this template to new notes
+      
+      -- UI behavior
+      ui = {
+        show_rename_preview = true, -- Show file preview when renaming notes with links
+      },
       
       -- Custom template variables
       template_vars = {
@@ -416,7 +432,8 @@ Ex Commands~
                                                     *markdown-notes-ex-commands*
 :MarkdownNotesRename [{name}]                      *:MarkdownNotesRename*
     Rename current note and update all references. If {name} is not provided,
-    prompts for the new name. Shows confirmation dialog with file count.
+    prompts for the new name. Shows file preview with affected files or 
+    confirmation dialog depending on configuration.
 
 Function API~
                                                *markdown-notes-function-commands*
@@ -452,10 +469,12 @@ require("markdown-notes.links").follow_link()      *markdown-notes.follow_link*
 require("markdown-notes.links").show_backlinks()   *markdown-notes.show_backlinks*
     Show backlinks to the current note.
 
-require("markdown-notes.links").rename_note(new_name)  *markdown-notes.rename_note*
+require("markdown-notes.links").rename_note(new_name, opts)  *markdown-notes.rename_note*
     Rename the current note and automatically update all wiki-style link 
     references across the vault. Supports both `[[note]]` and `[[note|display]]`
-    formats. Shows confirmation dialog with file count before proceeding.
+    formats. Shows file preview with affected files by default, or simple
+    confirmation if ui.show_rename_preview is false. Optional {opts} table
+    accepts skip_ui boolean for programmatic usage.
 
 require("markdown-notes.templates").pick_template()  *markdown-notes.pick_template*
     Pick and insert a template at cursor position.

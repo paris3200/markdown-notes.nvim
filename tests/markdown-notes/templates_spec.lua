@@ -42,5 +42,54 @@ describe("templates", function()
       assert.matches("%d%d%d%d%-%d%d%-%d%d", result[1])
       assert.matches("%d%d:%d%d", result[1])
     end)
+
+    it("uses config-defined template variables", function()
+      -- Setup config with custom template variables
+      config.setup({
+        template_vars = {
+          author = function() return "Test Author" end,
+          project = function() return "my-project" end,
+          custom_static = "static-content"
+        }
+      })
+      
+      local content = {
+        "Author: {{author}}",
+        "Project: {{project}}",
+        "Static: {{custom_static}}",
+        "Date: {{date}}"
+      }
+      
+      local result = templates.substitute_template_vars(content)
+      
+      -- Custom variables should be substituted
+      assert.are.equal("Author: Test Author", result[1])
+      assert.are.equal("Project: my-project", result[2])
+      assert.are.equal("Static: static-content", result[3])
+      
+      -- Default variables should still work
+      assert.matches("Date: %d%d%d%d%-%d%d%-%d%d", result[4])
+    end)
+
+    it("overrides config variables with custom vars parameter", function()
+      -- Setup config with a template variable
+      config.setup({
+        template_vars = {
+          author = function() return "Config Author" end,
+        }
+      })
+      
+      local content = {"Author: {{author}}"}
+      
+      -- Override with custom vars
+      local custom_vars = {
+        author = function() return "Override Author" end
+      }
+      
+      local result = templates.substitute_template_vars(content, custom_vars)
+      
+      -- Should use the override, not the config value
+      assert.are.equal("Author: Override Author", result[1])
+    end)
   end)
 end)

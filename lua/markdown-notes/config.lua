@@ -33,6 +33,12 @@ M.defaults = {
 	-- Default workspace (optional)
 	default_workspace = nil,
 
+	-- UI behavior
+	ui = {
+		-- Show file preview when renaming notes that have links
+		show_rename_preview = true,
+	},
+
 	-- Key mappings
 	mappings = {
 		daily_note_today = "<leader>nd",

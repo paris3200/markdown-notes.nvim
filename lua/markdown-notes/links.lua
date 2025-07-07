@@ -110,8 +110,7 @@ function M.show_backlinks()
 	local search_text = "[[" .. relative_path .. "]]"
 
 	-- Get all markdown files first, then check each one
-	local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) ..
-		" && find . -name '*.md' -type f -not -path '*/.*'"
+	local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) .. " && find . -name '*.md' -type f -not -path '*/.*'"
 	local all_files = vim.fn.systemlist(all_files_cmd)
 
 	-- Remove ./ prefix from paths
@@ -162,7 +161,8 @@ function M.show_backlinks()
 	})
 end
 
-function M.rename_note(new_name)
+function M.rename_note(new_name, opts)
+	opts = opts or {}
 	local current_path = vim.fn.expand("%:p")
 	local options = config.get_current_config()
 	local vault_path = vim.fn.expand(options.vault_path)
@@ -211,8 +211,7 @@ function M.rename_note(new_name)
 	local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "|"
 
 	-- Get all markdown files
-	local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) ..
-		" && find . -name '*.md' -type f -not -path '*/.*'"
+	local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) .. " && find . -name '*.md' -type f -not -path '*/.*'"
 	local all_files = vim.fn.systemlist(all_files_cmd)
 
 	-- Remove ./ prefix from paths
@@ -256,18 +255,65 @@ function M.rename_note(new_name)
 		new_relative_path = current_dir_relative .. "/" .. new_name
 	end
 
-	-- Ask for confirmation
-	local message = "Rename '" .. relative_path .. "' to '" .. new_name .. "'"
-	if #files_to_update > 0 then
-		message = message .. " and update " .. #files_to_update .. " files with links?"
-	else
-		message = message .. "?"
-	end
+	-- Show affected files and ask for confirmation
+	if #files_to_update > 0 and not opts.skip_ui and options.ui.show_rename_preview then
+		local ok, fzf = pcall(require, "fzf-lua")
+		if not ok then
+			vim.notify("fzf-lua not available", vim.log.levels.ERROR)
+			return
+		end
 
-	local confirm = vim.fn.confirm(message, "&Yes\n&No", 2)
-	if confirm ~= 1 then
-		return
+		-- Show files that will be updated
+		local file_list = {}
+		for _, file_info in ipairs(files_to_update) do
+			table.insert(file_list, file_info.file)
+		end
+
+		fzf.fzf_exec(file_list, {
+			prompt = "Files to update (" .. #files_to_update .. ") - Enter to rename, Esc to cancel > ",
+			cwd = vault_path,
+			previewer = "builtin",
+			actions = {
+				["default"] = function()
+					-- Proceed with rename directly (preview was the confirmation)
+					M._perform_rename(
+						current_path,
+						new_file_path,
+						files_to_update,
+						relative_path,
+						new_relative_path,
+						update_count
+					)
+				end,
+			},
+		})
+	else
+		-- Skip UI for tests or when no files to update
+		local message = "Rename '" .. relative_path .. "' to '" .. new_name .. "'"
+		if #files_to_update > 0 then
+			message = message .. " and update " .. #files_to_update .. " files?"
+		else
+			message = message .. "?"
+		end
+		local confirm = opts.skip_ui and 1 or vim.fn.confirm(message, "&Yes\n&No", 2)
+		if confirm == 1 then
+			M._perform_rename(
+				current_path,
+				new_file_path,
+				files_to_update,
+				relative_path,
+				new_relative_path,
+				update_count
+			)
+		end
 	end
+end
+
+-- Helper function to perform the actual rename operation
+function M._perform_rename(current_path, new_file_path, files_to_update, relative_path, new_relative_path, update_count)
+	-- Check if we're renaming the current buffer's file (before renaming)
+	local current_bufnr = vim.fn.bufnr("%")
+	local is_current_buffer = current_bufnr ~= -1 and vim.fn.expand("%:p") == current_path
 
 	-- Update all linking files
 	for _, file_info in ipairs(files_to_update) do
@@ -293,7 +339,22 @@ function M.rename_note(new_name)
 	-- Rename the actual file
 	local success = vim.fn.rename(current_path, new_file_path)
 	if success == 0 then
-		vim.cmd("edit " .. vim.fn.fnameescape(new_file_path))
+		-- Handle buffer management if we renamed the current buffer's file
+		if is_current_buffer then
+			-- Update the buffer's filename to the new path
+			-- Use pcall to handle E95 error if buffer name already exists
+			local success_rename = pcall(vim.api.nvim_buf_set_name, current_bufnr, new_file_path)
+			if not success_rename then
+				-- If buffer name collision, force close conflicting buffer and retry
+				local conflicting_bufnr = vim.fn.bufnr(new_file_path)
+				if conflicting_bufnr ~= -1 then
+					vim.cmd("bwipeout! " .. conflicting_bufnr)
+					vim.api.nvim_buf_set_name(current_bufnr, new_file_path)
+				end
+			end
+			-- Reload the buffer to reflect the new filename
+			vim.cmd("edit!")
+		end
 		if update_count > 0 then
 			vim.notify("Renamed note and updated " .. update_count .. " files", vim.log.levels.INFO)
 		else

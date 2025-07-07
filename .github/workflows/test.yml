@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -7,6 +7,24 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Lua and LuaRocks
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lua5.4 luarocks
+        
+    - name: Install luacheck
+      run: |
+        sudo luarocks install luacheck
+        
+    - name: Run linting
+      run: |
+        make lint
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -29,4 +47,4 @@ jobs:
         
     - name: Run tests
       run: |
-        nvim --headless -c "PlenaryBustedDirectory tests/ { minimal_init = 'tests/minimal_init.vim' }"
+        make test

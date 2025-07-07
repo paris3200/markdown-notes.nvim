@@ -465,9 +465,30 @@ We welcome contributions! Here's how to get started:
 git clone https://github.com/yourusername/markdown-notes.nvim.git
 cd markdown-notes.nvim
 
-# Run tests (requires plenary.nvim)
-nvim --headless -u tests/minimal_init.vim -c "lua require('plenary.test_harness').test_directory('tests')"
+# Install luacheck for linting (optional but recommended)
+luarocks install luacheck
+
+# Run tests
+make test
+
+# Run linting
+make lint
+
+# Fix linting issues with detailed output
+make lint-fix
 ```
+
+### Development Tools
+
+This project includes several development tools accessible via the Makefile:
+
+- `make test` - Run all tests using plenary.nvim
+- `make lint` - Run luacheck linter on source and test files
+- `make lint-fix` - Run luacheck with detailed output for fixing issues
+- `make clean` - Clean up temporary files
+- `make check-deps` - Verify required tools are installed
+
+The project uses GitHub Actions for CI, which automatically runs both tests and linting on all pull requests.
 
 ### Reporting Issues
 

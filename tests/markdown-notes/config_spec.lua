@@ -42,6 +42,32 @@ describe("config", function()
     assert.is_not_nil(config.options.mappings.new_note)
   end)
 
+  it("merges user-defined template variables with defaults", function()
+    local user_opts = {
+      template_vars = {
+        author = function() return "Test Author" end,
+        project = function() return "test-project" end,
+        custom_string = "static-value"
+      }
+    }
+    
+    config.setup(user_opts)
+    
+    -- User variables should be present
+    assert.is_function(config.options.template_vars.author)
+    assert.is_function(config.options.template_vars.project)
+    assert.are.equal("static-value", config.options.template_vars.custom_string)
+    
+    -- Default variables should still be present
+    assert.is_function(config.options.template_vars.date)
+    assert.is_function(config.options.template_vars.time)
+    assert.is_function(config.options.template_vars.title)
+    
+    -- Test that user functions work
+    assert.are.equal("Test Author", config.options.template_vars.author())
+    assert.are.equal("test-project", config.options.template_vars.project())
+  end)
+
   describe("workspaces", function()
     it("sets up workspace with custom config", function()
       local workspace_opts = {

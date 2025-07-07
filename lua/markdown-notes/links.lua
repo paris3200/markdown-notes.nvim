@@ -272,27 +272,20 @@ function M.rename_note(new_name, opts)
 		end
 
 		fzf.fzf_exec(file_list, {
-			prompt = "Files to update (" .. #files_to_update .. ") - Enter to proceed > ",
+			prompt = "Files to update (" .. #files_to_update .. ") - Enter to rename, Esc to cancel > ",
 			cwd = vault_path,
 			previewer = "builtin",
 			actions = {
 				["default"] = function()
-					-- Proceed with rename
-					local confirm = vim.fn.confirm(
-						"Proceed with rename and update " .. #files_to_update .. " files?",
-						"&Yes\n&No",
-						2
+					-- Proceed with rename directly (preview was the confirmation)
+					M._perform_rename(
+						current_path,
+						new_file_path,
+						files_to_update,
+						relative_path,
+						new_relative_path,
+						update_count
 					)
-					if confirm == 1 then
-						M._perform_rename(
-							current_path,
-							new_file_path,
-							files_to_update,
-							relative_path,
-							new_relative_path,
-							update_count
-						)
-					end
 				end,
 			},
 		})

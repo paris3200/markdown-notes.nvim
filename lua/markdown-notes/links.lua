@@ -4,8 +4,10 @@ local M = {}
 
 -- Helper function to insert a link at cursor position
 local function insert_link_at_cursor(file_path)
+	-- Normalize path by removing leading ./ if present
+	local normalized_path = file_path:gsub("^%./", "")
 	-- Remove .md extension but keep the full path
-	local link_path = file_path:gsub("%.md$", "")
+	local link_path = normalized_path:gsub("%.md$", "")
 	local link = "[[" .. link_path .. "]]"
 
 	-- Insert link at cursor

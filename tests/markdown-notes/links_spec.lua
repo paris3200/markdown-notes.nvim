@@ -433,4 +433,161 @@ describe("links", function()
 			config.get_current_config = original_get_config
 		end)
 	end)
+
+	describe("follow_link", function()
+		it("follows simple wikilinks", function()
+			-- Create target note
+			local target_path = vault_path .. "/target-note.md"
+			vim.fn.writefile({ "# Target Note", "This is the target" }, target_path)
+
+			-- Create source note with link
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "See [[target-note]] for details" }, source_path)
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 6 }) -- Position on "target-note"
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we're now in the target file
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(target_path, current_file)
+		end)
+
+		it("follows wikilinks with pipe separator display text", function()
+			-- Create target note
+			local target_path = vault_path .. "/long-filename.md"
+			vim.fn.writefile({ "# Long Filename", "This is the target" }, target_path)
+
+			-- Create source note with pipe-separated link
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "See [[long-filename|Short Title]] for details" }, source_path)
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 8 }) -- Position inside the link
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we're now in the target file
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(target_path, current_file)
+		end)
+
+		it("follows wikilinks with path and pipe separator", function()
+			-- Create subdirectory and target note
+			local subdir = vault_path .. "/projects"
+			vim.fn.mkdir(subdir, "p")
+			local target_path = subdir .. "/some-long-filename.md"
+			vim.fn.writefile({ "# Some Long Filename", "This is the target" }, target_path)
+
+			-- Create source note with pipe-separated link including path
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "Check [[projects/some-long-filename|Project Summary]] here" }, source_path)
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 15 }) -- Position inside the link
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we're now in the target file
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(target_path, current_file)
+		end)
+
+		it("handles multiple pipe separators correctly", function()
+			-- Create target note
+			local target_path = vault_path .. "/technical-doc.md"
+			vim.fn.writefile({ "# Technical Doc", "Content here" }, target_path)
+
+			-- Create source note with multiple pipes (only first one should be used as separator)
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "See [[technical-doc|Title | With | Pipes]] for info" }, source_path)
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 8 }) -- Position inside the link
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we're now in the target file
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(target_path, current_file)
+		end)
+
+		it("falls back to fuzzy search when exact file not found", function()
+			-- Create target note with partial name match
+			local target_path = vault_path .. "/very-long-filename.md"
+			vim.fn.writefile({ "# Very Long Filename", "Content here" }, target_path)
+
+			-- Create source note with partial link (should find via fuzzy search)
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "See [[long-filename]] for details" }, source_path)
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 8 }) -- Position inside the link
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we found the file via fuzzy search
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(target_path, current_file)
+		end)
+
+		it("shows warning when file not found", function()
+			-- Create source note with link to non-existent file
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "See [[nonexistent-file]] for details" }, source_path)
+
+			-- Clear notifications
+			_G.notifications = {}
+
+			-- Open source note and position cursor on link
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 8 }) -- Position inside the link
+
+			-- Follow the link
+			links.follow_link()
+
+			-- Check that we got a warning notification
+			assert.is_true(#_G.notifications > 0)
+			local found_warning = false
+			for _, notification in ipairs(_G.notifications) do
+				if notification.message:find("File not found") and notification.level == vim.log.levels.WARN then
+					found_warning = true
+					break
+				end
+			end
+			assert.is_true(found_warning)
+		end)
+
+		it("handles cursor not on a link gracefully", function()
+			-- Create source note without wikilinks but with a word that could be a filename
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "Check the README file for instructions" }, source_path)
+
+			-- Create the README file so gf won't fail
+			local readme_path = vault_path .. "/README"
+			vim.fn.writefile({ "# Instructions" }, readme_path)
+
+			-- Open source note and position cursor on "README"
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 12 }) -- Position on "README"
+
+			-- This should fall back to normal gf behavior and open README
+			links.follow_link()
+
+			-- Check that we're now in the README file (normal gf behavior)
+			local current_file = vim.fn.expand("%:p")
+			assert.are.equal(readme_path, current_file)
+		end)
+	end)
 end)

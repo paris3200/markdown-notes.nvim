@@ -61,6 +61,11 @@ function M.follow_link()
 		local link_end = line:find("%]%]", col + 1)
 		if link_end then
 			local link_text = line:sub(link_start + 2, link_end - 1)
+			-- Extract only the filename part if there's a pipe separator for display text
+			local pipe_pos = link_text:find("|")
+			if pipe_pos then
+				link_text = link_text:sub(1, pipe_pos - 1)
+			end
 			local file_path = vim.fn.expand(options.vault_path .. "/" .. link_text .. ".md")
 
 			-- Try to find the file if exact match doesn't exist

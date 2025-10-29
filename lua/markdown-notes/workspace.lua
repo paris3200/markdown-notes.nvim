@@ -95,4 +95,38 @@ function M.pick_workspace()
 	})
 end
 
+-- Auto-detect workspace based on current file path
+function M.auto_detect_workspace()
+	local current_file = vim.fn.expand("%:p")
+
+	-- Only process markdown files
+	if vim.fn.expand("%:e") ~= "md" then
+		return
+	end
+
+	-- Don't process if file path is empty
+	if current_file == "" then
+		return
+	end
+
+	local workspaces = config.get_workspaces()
+	local current_workspace = config.get_active_workspace()
+
+	-- Check each workspace to see if the file belongs to it
+	for name, workspace in pairs(workspaces) do
+		local vault_path = vim.fn.expand(workspace.vault_path)
+		-- Normalize paths for comparison
+		vault_path = vim.fn.fnamemodify(vault_path, ":p")
+
+		-- Check if current file is within this workspace's vault
+		if current_file:sub(1, #vault_path) == vault_path then
+			-- Only switch if we're not already in this workspace
+			if current_workspace ~= name then
+				config.set_active_workspace(name)
+			end
+			return
+		end
+	end
+end
+
 return M

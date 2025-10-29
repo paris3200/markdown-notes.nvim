@@ -10,6 +10,7 @@ local M = {}
 function M.setup(opts)
 	config.setup(opts)
 	M.setup_keymaps()
+	M.setup_autocommands()
 end
 
 function M.setup_workspace(name, opts)
@@ -145,6 +146,19 @@ function M.setup_keymaps()
 		local _, active = config.get_current_config()
 		vim.notify("Active workspace: " .. active, vim.log.levels.INFO)
 	end, { desc = "Show active workspace" })
+end
+
+function M.setup_autocommands()
+	-- Auto-detect workspace when entering a buffer
+	local augroup = vim.api.nvim_create_augroup("MarkdownNotesWorkspace", { clear = true })
+	vim.api.nvim_create_autocmd({ "BufEnter", "BufRead" }, {
+		group = augroup,
+		pattern = "*.md",
+		callback = function()
+			workspace.auto_detect_workspace()
+		end,
+		desc = "Auto-detect markdown workspace based on file path",
+	})
 end
 
 return M

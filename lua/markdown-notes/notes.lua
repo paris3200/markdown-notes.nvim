@@ -170,17 +170,36 @@ function M.search_tags()
 	for _, file in ipairs(all_files) do
 		local content = vim.fn.readfile(file)
 		local in_frontmatter = false
+		local in_tags_list = false
 
-		for _, line in ipairs(content) do
+		for i, line in ipairs(content) do
 			if line == "---" then
 				in_frontmatter = not in_frontmatter
-			elseif in_frontmatter and line:match("^tags:") then
-				-- Extract tags from YAML array format: tags: [tag1, tag2, tag3]
-				local tags_line = line:gsub("^tags:%s*", "")
-				if tags_line:match("^%[.*%]$") then
-					-- Remove brackets and split by comma
-					local tags_content = tags_line:gsub("^%[", ""):gsub("%]$", "")
-					for tag in tags_content:gmatch("[^,]+") do
+				in_tags_list = false
+			elseif in_frontmatter then
+				if line:match("^tags:") then
+					-- Extract tags from YAML array format: tags: [tag1, tag2, tag3]
+					local tags_line = line:gsub("^tags:%s*", "")
+					if tags_line:match("^%[.*%]$") then
+						-- Remove brackets and split by comma
+						local tags_content = tags_line:gsub("^%[", ""):gsub("%]$", "")
+						for tag in tags_content:gmatch("[^,]+") do
+							local clean_tag = tag:gsub("%s", ""):gsub('"', ""):gsub("'", "")
+							if clean_tag ~= "" then
+								if not tags[clean_tag] then
+									tags[clean_tag] = {}
+								end
+								table.insert(tags[clean_tag], file)
+							end
+						end
+					else
+						-- YAML list format: tags are on following lines starting with -
+						in_tags_list = true
+					end
+				elseif in_tags_list and line:match("^%s*-%s+") then
+					-- Extract tag from YAML list item: "  - tagname"
+					local tag = line:match("^%s*-%s+(.+)")
+					if tag then
 						local clean_tag = tag:gsub("%s", ""):gsub('"', ""):gsub("'", "")
 						if clean_tag ~= "" then
 							if not tags[clean_tag] then
@@ -189,8 +208,10 @@ function M.search_tags()
 							table.insert(tags[clean_tag], file)
 						end
 					end
+				elseif in_tags_list and not line:match("^%s*-%s+") and not line:match("^%s*$") then
+					-- Hit a non-list-item, non-empty line, stop looking for tags
+					in_tags_list = false
 				end
-				break -- Only process first tags line in frontmatter
 			end
 		end
 	end

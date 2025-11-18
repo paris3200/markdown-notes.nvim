@@ -70,7 +70,7 @@ function M.follow_link()
 
 			-- Try to find the file if exact match doesn't exist
 			if vim.fn.filereadable(file_path) == 0 then
-				local find_cmd = "find "
+				local find_cmd = "find -L "
 					.. vim.fn.expand(options.vault_path)
 					.. " -name '*"
 					.. link_text

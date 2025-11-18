@@ -160,8 +160,8 @@ function M.search_tags()
 
 	local vault_path = vim.fn.expand(options.vault_path)
 
-	-- Get all markdown files
-	local find_cmd = "find " .. vim.fn.shellescape(vault_path) ..
+	-- Get all markdown files (-L follows symlinks)
+	local find_cmd = "find -L " .. vim.fn.shellescape(vault_path) ..
 		" -name '*.md' -type f -not -path '*/.*'"
 	local all_files = vim.fn.systemlist(find_cmd)
 

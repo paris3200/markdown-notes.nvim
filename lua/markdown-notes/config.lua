@@ -28,6 +28,29 @@ M.defaults = {
 		tomorrow = function()
 			return os.date("%Y-%m-%d", os.time() + 86400)
 		end,
+		-- Week-related variables
+		week_number = function()
+			return os.date("%U")
+		end,
+		week_year = function()
+			return os.date("%Y")
+		end,
+		week_id = function()
+			return "W" .. os.date("%U") .. "-" .. os.date("%Y")
+		end,
+		-- Full date format variables
+		full_date = function()
+			return os.date("%A, %B %d, %Y")
+		end,
+		year = function()
+			return os.date("%Y")
+		end,
+		month = function()
+			return os.date("%B")
+		end,
+		day_name = function()
+			return os.date("%A")
+		end,
 	},
 
 	-- Default workspace (optional)
@@ -44,6 +67,9 @@ M.defaults = {
 		daily_note_today = "<leader>nd",
 		daily_note_yesterday = "<leader>ny",
 		daily_note_tomorrow = "<leader>nt",
+		weekly_note_this_week = "<leader>nw",
+		weekly_note_last_week = "<leader>nwl",
+		weekly_note_next_week = "<leader>nwn",
 		new_note = "<leader>nn",
 		new_note_from_template = "<leader>nc",
 		find_notes = "<leader>nf",
@@ -54,7 +80,7 @@ M.defaults = {
 		show_backlinks = "<leader>nb",
 		follow_link = "gf",
 		rename_note = "<leader>nr",
-		pick_workspace = "<leader>nw",
+		pick_workspace = "<leader>nW",
 	},
 }
 

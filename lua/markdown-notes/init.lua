@@ -1,6 +1,7 @@
 local config = require("markdown-notes.config")
 local templates = require("markdown-notes.templates")
 local daily = require("markdown-notes.daily")
+local weekly = require("markdown-notes.weekly")
 local notes = require("markdown-notes.notes")
 local links = require("markdown-notes.links")
 local workspace = require("markdown-notes.workspace")
@@ -58,6 +59,17 @@ function M.setup_keymaps()
 		daily.open_daily_note(1)
 	end, "Open tomorrow's note")
 
+	-- Weekly notes
+	map("n", "weekly_note_this_week", function()
+		weekly.open_weekly_note(0)
+	end, "Open this week's note")
+	map("n", "weekly_note_last_week", function()
+		weekly.open_weekly_note(-1)
+	end, "Open last week's note")
+	map("n", "weekly_note_next_week", function()
+		weekly.open_weekly_note(1)
+	end, "Open next week's note")
+
 	-- Note management
 	map("n", "new_note", notes.create_new_note, "Create new note")
 	map("n", "new_note_from_template", notes.create_from_template, "Create new note from template")
@@ -84,6 +96,24 @@ function M.setup_keymaps()
 
 	-- Workspaces
 	map("n", "pick_workspace", workspace.pick_workspace, "Pick workspace")
+
+	-- Daily note commands
+	vim.api.nvim_create_user_command("MarkdownNotesDailyOpen", function(opts)
+		local offset = 0
+		if opts.args and opts.args ~= "" then
+			offset = tonumber(opts.args) or 0
+		end
+		daily.open_daily_note(offset)
+	end, { nargs = "?", desc = "Open daily note (offset in days from today)" })
+
+	-- Weekly note commands
+	vim.api.nvim_create_user_command("MarkdownNotesWeeklyOpen", function(opts)
+		local offset = 0
+		if opts.args and opts.args ~= "" then
+			offset = tonumber(opts.args) or 0
+		end
+		weekly.open_weekly_note(offset)
+	end, { nargs = "?", desc = "Open weekly note (offset in weeks from this week)" })
 
 	-- Note management commands
 	vim.api.nvim_create_user_command("MarkdownNotesRename", function(opts)

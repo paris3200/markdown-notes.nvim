@@ -51,6 +51,7 @@ That's it! You're ready to start building your knowledge base.
 
 ### Core Features
 - **📅 Daily Notes** - Quick creation and navigation with automatic templating
+- **📆 Weekly Notes** - ISO week-based notes for weekly reviews and planning
 - **📝 Template System** - Flexible templates with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
 - **🔗 Wiki-style Links** - Create and follow `[[note-name]]` links between notes
 - **🔄 Smart Renaming** - Rename notes and automatically update all references with file preview
@@ -116,6 +117,7 @@ require("markdown-notes").setup({
   vault_path = "~/notes",                    -- Where your notes live
   templates_path = "~/notes/templates",      -- Where your templates live
   dailies_path = "~/notes/daily",           -- Where daily notes go
+  weekly_path = "~/notes/weekly",           -- Where weekly notes go
 })
 ```
 
@@ -128,6 +130,9 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>nd` | Daily note (today) | Create/open today's daily note |
 | `<leader>ny` | Daily note (yesterday) | Open yesterday's daily note |
 | `<leader>nt` | Daily note (tomorrow) | Open tomorrow's daily note |
+| `<leader>nww` | Weekly note (this week) | Create/open this week's weekly note |
+| `<leader>nwl` | Weekly note (last week) | Open last week's weekly note |
+| `<leader>nwn` | Weekly note (next week) | Open next week's weekly note |
 | `<leader>nn` | New note | Create a new note |
 | `<leader>nc` | New note from template | Create note with template selection |
 | `<leader>nf` | Find notes | Search and open existing notes |
@@ -137,7 +142,7 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>ng` | Search tags | Find notes by frontmatter tags |
 | `<leader>nb` | Show backlinks | Show notes linking to current note |
 | `<leader>nr` | Rename note | Rename note and update all references with preview |
-| `<leader>nw` | Pick workspace | Switch between workspaces |
+| `<leader>nW` | Pick workspace | Switch between workspaces (capital W) |
 | `gf` | Follow link | Follow link under cursor |
 
 > **💡 Tip:** All keybindings can be customized in your configuration.
@@ -153,6 +158,25 @@ Daily notes are the heart of many note-taking workflows. Start your day by creat
 ```
 
 If you have a `Daily.md` template, it will be automatically applied. Otherwise, a basic note with frontmatter is created.
+
+### Weekly Notes and Reviews
+
+Weekly notes help you plan and review your week at a higher level. They use ISO week numbers for consistency:
+
+```
+<leader>nww  →  Creates/opens this week's note (e.g., W03-2025-Weekly-Review.md)
+<leader>nwl  →  Opens last week's note
+<leader>nwn  →  Opens next week's note
+```
+
+Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and automatically apply your `Weekly.md` template if available. The plugin uses ISO week numbers where:
+- Weeks start on Monday
+- Week 1 is the week containing the first Thursday of the year
+
+**Example workflow:**
+1. Start each week with `<leader>nww` to create your weekly planning note
+2. Review last week with `<leader>nwl` before planning the current week
+3. Use template variables like `{{week_number}}`, `{{week_year}}`, and `{{week_id}}` in your Weekly template
 
 ### Creating and Managing Notes
 
@@ -226,6 +250,8 @@ tags: [meetings]
 
 | Command | Description |
 |---------|-------------|
+| `:MarkdownNotesDailyOpen [offset]` | Open daily note (offset in days from today) |
+| `:MarkdownNotesWeeklyOpen [offset]` | Open weekly note (offset in weeks from this week) |
 | `:MarkdownNotesRename [name]` | Rename current note and update references |
 | `:MarkdownNotesWorkspaceStatus` | Show current workspace |
 | `:MarkdownNotesWorkspacePick` | Switch workspace with fuzzy finder |
@@ -254,12 +280,22 @@ require("markdown-notes").setup({
   
   -- Custom template variables
   template_vars = {
+    -- Date/time variables
     date = function() return os.date("%Y-%m-%d") end,
     time = function() return os.date("%H:%M") end,
     datetime = function() return os.date("%Y-%m-%d %H:%M") end,
     title = function() return vim.fn.expand("%:t:r") end,
     yesterday = function() return os.date("%Y-%m-%d", os.time() - 86400) end,
     tomorrow = function() return os.date("%Y-%m-%d", os.time() + 86400) end,
+    -- Week variables
+    week_number = function() return os.date("%U") end,
+    week_year = function() return os.date("%Y") end,
+    week_id = function() return "W" .. os.date("%U") .. "-" .. os.date("%Y") end,
+    -- Full date format variables
+    full_date = function() return os.date("%A, %B %d, %Y") end,
+    year = function() return os.date("%Y") end,
+    month = function() return os.date("%B") end,
+    day_name = function() return os.date("%A") end,
     -- Add your own custom variables
     author = function() return "Your Name" end,
     project = function() return vim.fn.getcwd():match("([^/]+)$") end,
@@ -268,8 +304,11 @@ require("markdown-notes").setup({
   -- Customize keybindings
   mappings = {
     daily_note_today = "<leader>nd",
-    daily_note_yesterday = "<leader>ny", 
+    daily_note_yesterday = "<leader>ny",
     daily_note_tomorrow = "<leader>nt",
+    weekly_note_this_week = "<leader>nww",
+    weekly_note_last_week = "<leader>nwl",
+    weekly_note_next_week = "<leader>nwn",
     new_note = "<leader>nn",
     new_note_from_template = "<leader>nc",
     find_notes = "<leader>nf",
@@ -280,6 +319,7 @@ require("markdown-notes").setup({
     show_backlinks = "<leader>nb",
     follow_link = "gf",
     rename_note = "<leader>nr",
+    pick_workspace = "<leader>nW",
   },
 })
 ```
@@ -321,7 +361,7 @@ require("markdown-notes").setup_workspace("research", {
 
 #### Workspace Workflow
 
-- **Switch workspaces**: Use `<leader>nw` to pick from available workspaces
+- **Switch workspaces**: Use `<leader>nW` (capital W) to pick from available workspaces
 - **Persistent context**: All commands use the active workspace until you switch
 - **Independent settings**: Each workspace has its own paths, templates, and variables
 
@@ -355,6 +395,13 @@ Templates are markdown files with special `{{variable}}` syntax that gets substi
 | `{{title}}` | File name without extension | `meeting-notes` |
 | `{{yesterday}}` | Yesterday's date | `2025-01-14` |
 | `{{tomorrow}}` | Tomorrow's date | `2025-01-16` |
+| `{{week_number}}` | ISO week number | `03` |
+| `{{week_year}}` | Year for the week | `2025` |
+| `{{week_id}}` | Week identifier | `W03-2025` |
+| `{{full_date}}` | Full date format | `Wednesday, January 15, 2025` |
+| `{{year}}` | Current year | `2025` |
+| `{{month}}` | Current month name | `January` |
+| `{{day_name}}` | Current day name | `Wednesday` |
 
 ### Creating Custom Variables
 
@@ -392,6 +439,31 @@ tags: [daily]
 - [ ] 
 ```
 
+**Weekly Note Template** (`templates/Weekly.md`):
+```markdown
+---
+title: Week {{week_number}} - {{week_year}}
+date: {{date}}
+week: {{week_id}}
+tags: [weekly, review]
+---
+
+# Week {{week_number}}, {{week_year}}
+
+## 📊 Week Overview
+
+**Week of:** {{full_date}}
+
+## 🎯 Goals for This Week
+- [ ]
+
+## 📝 Weekly Accomplishments
+
+## 🔄 Next Week's Focus
+
+## 📚 Notes and Learnings
+```
+
 **Meeting Template** (`templates/meeting.md`):
 ```markdown
 ---
@@ -403,15 +475,15 @@ attendees: []
 
 # {{title}}
 
-**Date:** {{datetime}}  
-**Attendees:** 
+**Date:** {{datetime}}
+**Attendees:**
 
 ## 📋 Agenda
 
 ## 📝 Discussion Notes
 
 ## ✅ Action Items
-- [ ] 
+- [ ]
 
 ## 🔗 Links
 ```

@@ -130,7 +130,7 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>nd` | Daily note (today) | Create/open today's daily note |
 | `<leader>ny` | Daily note (yesterday) | Open yesterday's daily note |
 | `<leader>nt` | Daily note (tomorrow) | Open tomorrow's daily note |
-| `<leader>nw` | Weekly note (this week) | Create/open this week's weekly note |
+| `<leader>nww` | Weekly note (this week) | Create/open this week's weekly note |
 | `<leader>nwl` | Weekly note (last week) | Open last week's weekly note |
 | `<leader>nwn` | Weekly note (next week) | Open next week's weekly note |
 | `<leader>nn` | New note | Create a new note |
@@ -164,7 +164,7 @@ If you have a `Daily.md` template, it will be automatically applied. Otherwise, 
 Weekly notes help you plan and review your week at a higher level. They use ISO week numbers for consistency:
 
 ```
-<leader>nw   →  Creates/opens this week's note (e.g., W03-2025-Weekly-Review.md)
+<leader>nww  →  Creates/opens this week's note (e.g., W03-2025-Weekly-Review.md)
 <leader>nwl  →  Opens last week's note
 <leader>nwn  →  Opens next week's note
 ```
@@ -174,7 +174,7 @@ Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and a
 - Week 1 is the week containing the first Thursday of the year
 
 **Example workflow:**
-1. Start each week with `<leader>nw` to create your weekly planning note
+1. Start each week with `<leader>nww` to create your weekly planning note
 2. Review last week with `<leader>nwl` before planning the current week
 3. Use template variables like `{{week_number}}`, `{{week_year}}`, and `{{week_id}}` in your Weekly template
 
@@ -306,7 +306,7 @@ require("markdown-notes").setup({
     daily_note_today = "<leader>nd",
     daily_note_yesterday = "<leader>ny",
     daily_note_tomorrow = "<leader>nt",
-    weekly_note_this_week = "<leader>nw",
+    weekly_note_this_week = "<leader>nww",
     weekly_note_last_week = "<leader>nwl",
     weekly_note_next_week = "<leader>nwn",
     new_note = "<leader>nn",

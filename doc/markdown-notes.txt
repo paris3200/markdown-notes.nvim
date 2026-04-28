@@ -225,7 +225,7 @@ Templates and Tags~
 `<leader>ng`        Find notes by frontmatter tags
 
 Workspaces~
-`<leader>nw`        Switch between workspaces
+`<leader>nW`        Pick workspace
 
 Note: All keybindings can be customized in your configuration.
 
@@ -339,7 +339,7 @@ Setting Up Workspaces~
 
 Workspace Workflow~
                                             *markdown-notes-workspace-workflow*
-- Switch workspaces: Use `<leader>nw` to pick from available workspaces
+- Switch workspaces: Use `<leader>nW` to pick from available workspaces
 - Persistent context: All commands use the active workspace until you switch
 - Independent settings: Each workspace has its own paths, templates, and variables
 

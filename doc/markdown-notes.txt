@@ -205,8 +205,13 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 
 Daily Notes~
 `<leader>nd`        Create/open today's daily note
-`<leader>ny`        Open yesterday's daily note  
+`<leader>ny`        Open yesterday's daily note
 `<leader>nt`        Open tomorrow's daily note
+
+Weekly Notes~
+`<leader>nWw`       Create/open this week's weekly note
+`<leader>nWl`       Open last week's weekly note
+`<leader>nWn`       Open next week's weekly note
 
 Note Management~
 `<leader>nn`        Create a new note
@@ -225,7 +230,7 @@ Templates and Tags~
 `<leader>ng`        Find notes by frontmatter tags
 
 Workspaces~
-`<leader>nW`        Pick workspace
+`<leader>nw`        Pick workspace
 
 Note: All keybindings can be customized in your configuration.
 
@@ -379,7 +384,7 @@ Setting Up Workspaces~
 
 Workspace Workflow~
                                             *markdown-notes-workspace-workflow*
-- Switch workspaces: Use `<leader>nW` to pick from available workspaces
+- Switch workspaces: Use `<leader>nw` to pick from available workspaces
 - Persistent context: All commands use the active workspace until you switch
 - Independent settings: Each workspace has its own paths, templates, and variables
 

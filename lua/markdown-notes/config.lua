@@ -71,9 +71,9 @@ M.defaults = {
 		daily_note_today = "<leader>nd",
 		daily_note_yesterday = "<leader>ny",
 		daily_note_tomorrow = "<leader>nt",
-		weekly_note_this_week = "<leader>nww",
-		weekly_note_last_week = "<leader>nwl",
-		weekly_note_next_week = "<leader>nwn",
+		weekly_note_this_week = "<leader>nWw",
+		weekly_note_last_week = "<leader>nWl",
+		weekly_note_next_week = "<leader>nWn",
 		new_note = "<leader>nn",
 		new_note_from_template = "<leader>nc",
 		find_notes = "<leader>nf",
@@ -84,7 +84,7 @@ M.defaults = {
 		show_backlinks = "<leader>nb",
 		follow_link = "gf",
 		rename_note = "<leader>nr",
-		pick_workspace = "<leader>nW",
+		pick_workspace = "<leader>nw",
 	},
 }
 

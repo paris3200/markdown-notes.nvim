@@ -7,6 +7,8 @@ M.defaults = {
 	weekly_path = "~/repos/notes/personal/weekly",
 	notes_subdir = "notes",
 	default_template = nil, -- Optional default template for new notes
+	-- "none": use title slug only; "timestamp": prepend unix timestamp (legacy)
+	filename_prefix = "none",
 
 	-- Template substitution variables
 	template_vars = {

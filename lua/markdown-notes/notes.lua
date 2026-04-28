@@ -3,20 +3,29 @@ local templates = require("markdown-notes.templates")
 
 local M = {}
 
+local function build_filename(title, options)
+	local slug = title ~= "" and title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower() or nil
+	if options.filename_prefix == "timestamp" then
+		local ts = tostring(os.time())
+		return slug and (ts .. "-" .. slug) or ts
+	else
+		return slug or tostring(os.time())
+	end
+end
+
 function M.create_new_note()
 	local title = vim.fn.input("Note title (optional): ")
 	local options = config.get_current_config()
 
-	-- Generate timestamp-based filename
-	local timestamp = tostring(os.time())
-	local filename = timestamp
-	if title ~= "" then
-		local clean_title = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
-		filename = timestamp .. "-" .. clean_title
-	end
-
+	local filename = build_filename(title, options)
 	local file_path = vim.fn.expand(options.vault_path .. "/" ..
 		options.notes_subdir .. "/" .. filename .. ".md")
+
+	if options.filename_prefix ~= "timestamp" and vim.fn.filereadable(file_path) == 1 then
+		vim.notify("Note already exists, opening: " .. filename, vim.log.levels.INFO)
+		vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+		return
+	end
 
 	-- Create directory if needed
 	local dir = vim.fn.fnamemodify(file_path, ":h")
@@ -68,16 +77,15 @@ function M.create_from_template()
 	local title = vim.fn.input("Note title (optional): ")
 	local options = config.get_current_config()
 
-	-- Generate timestamp-based filename
-	local timestamp = tostring(os.time())
-	local filename = timestamp
-	if title ~= "" then
-		local clean_title = title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower()
-		filename = timestamp .. "-" .. clean_title
-	end
-
+	local filename = build_filename(title, options)
 	local file_path = vim.fn.expand(options.vault_path .. "/" ..
 		options.notes_subdir .. "/" .. filename .. ".md")
+
+	if options.filename_prefix ~= "timestamp" and vim.fn.filereadable(file_path) == 1 then
+		vim.notify("Note already exists, opening: " .. filename, vim.log.levels.INFO)
+		vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+		return
+	end
 
 	-- Create directory if needed
 	local dir = vim.fn.fnamemodify(file_path, ":h")

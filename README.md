@@ -272,6 +272,11 @@ require("markdown-notes").setup({
   
   -- Template settings
   default_template = "basic", -- Auto-apply this template to new notes
+
+  -- Filename behavior
+  -- "none" (default): use title slug only (e.g. my-note.md); opens existing note on collision
+  -- "timestamp": prepend unix timestamp (e.g. 1720094400-my-note.md) for guaranteed uniqueness
+  filename_prefix = "none",
   
   -- UI behavior
   ui = {

@@ -130,9 +130,9 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>nd` | Daily note (today) | Create/open today's daily note |
 | `<leader>ny` | Daily note (yesterday) | Open yesterday's daily note |
 | `<leader>nt` | Daily note (tomorrow) | Open tomorrow's daily note |
-| `<leader>nww` | Weekly note (this week) | Create/open this week's weekly note |
-| `<leader>nwl` | Weekly note (last week) | Open last week's weekly note |
-| `<leader>nwn` | Weekly note (next week) | Open next week's weekly note |
+| `<leader>nWw` | Weekly note (this week) | Create/open this week's weekly note |
+| `<leader>nWl` | Weekly note (last week) | Open last week's weekly note |
+| `<leader>nWn` | Weekly note (next week) | Open next week's weekly note |
 | `<leader>nn` | New note | Create a new note |
 | `<leader>nc` | New note from template | Create note with template selection |
 | `<leader>nf` | Find notes | Search and open existing notes |
@@ -142,7 +142,7 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>ng` | Search tags | Find notes by frontmatter tags |
 | `<leader>nb` | Show backlinks | Show notes linking to current note |
 | `<leader>nr` | Rename note | Rename note and update all references with preview |
-| `<leader>nW` | Pick workspace | Switch between workspaces (capital W) |
+| `<leader>nw` | Pick workspace | Switch between workspaces |
 | `gf` | Follow link | Follow link under cursor |
 
 > **💡 Tip:** All keybindings can be customized in your configuration.
@@ -164,9 +164,9 @@ If you have a `Daily.md` template, it will be automatically applied. Otherwise, 
 Weekly notes help you plan and review your week at a higher level. They use ISO week numbers for consistency:
 
 ```
-<leader>nww  →  Creates/opens this week's note (e.g., W03-2025-Weekly-Review.md)
-<leader>nwl  →  Opens last week's note
-<leader>nwn  →  Opens next week's note
+<leader>nWw  →  Creates/opens this week's note (e.g., W03-2025-Weekly-Review.md)
+<leader>nWl  →  Opens last week's note
+<leader>nWn  →  Opens next week's note
 ```
 
 Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and automatically apply your `Weekly.md` template if available. The plugin uses ISO week numbers where:
@@ -174,8 +174,8 @@ Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and a
 - Week 1 is the week containing the first Thursday of the year
 
 **Example workflow:**
-1. Start each week with `<leader>nww` to create your weekly planning note
-2. Review last week with `<leader>nwl` before planning the current week
+1. Start each week with `<leader>nWw` to create your weekly planning note
+2. Review last week with `<leader>nWl` before planning the current week
 3. Use template variables like `{{week_number}}`, `{{week_year}}`, and `{{week_id}}` in your Weekly template
 
 ### Creating and Managing Notes
@@ -320,9 +320,9 @@ require("markdown-notes").setup({
     daily_note_today = "<leader>nd",
     daily_note_yesterday = "<leader>ny",
     daily_note_tomorrow = "<leader>nt",
-    weekly_note_this_week = "<leader>nww",
-    weekly_note_last_week = "<leader>nwl",
-    weekly_note_next_week = "<leader>nwn",
+    weekly_note_this_week = "<leader>nWw",
+    weekly_note_last_week = "<leader>nWl",
+    weekly_note_next_week = "<leader>nWn",
     new_note = "<leader>nn",
     new_note_from_template = "<leader>nc",
     find_notes = "<leader>nf",
@@ -333,7 +333,7 @@ require("markdown-notes").setup({
     show_backlinks = "<leader>nb",
     follow_link = "gf",
     rename_note = "<leader>nr",
-    pick_workspace = "<leader>nW",
+    pick_workspace = "<leader>nw",
   },
 })
 ```
@@ -375,7 +375,7 @@ require("markdown-notes").setup_workspace("research", {
 
 #### Workspace Workflow
 
-- **Switch workspaces**: Use `<leader>nW` (capital W) to pick from available workspaces
+- **Switch workspaces**: Use `<leader>nw` to pick from available workspaces
 - **Persistent context**: All commands use the active workspace until you switch
 - **Independent settings**: Each workspace has its own paths, templates, and variables
 

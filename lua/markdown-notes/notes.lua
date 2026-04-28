@@ -3,6 +3,13 @@ local templates = require("markdown-notes.templates")
 
 local M = {}
 
+local function get_subdir(template_name, options)
+	if template_name and options.template_dirs and options.template_dirs[template_name] then
+		return options.template_dirs[template_name]
+	end
+	return options.notes_subdir
+end
+
 local function build_filename(title, options)
 	local slug = title ~= "" and title:gsub(" ", "-"):gsub("[^A-Za-z0-9-]", ""):lower() or nil
 	if options.filename_prefix == "timestamp" then
@@ -17,9 +24,10 @@ function M.create_new_note()
 	local title = vim.fn.input("Note title (optional): ")
 	local options = config.get_current_config()
 
+	local subdir = get_subdir(options.default_template, options)
 	local filename = build_filename(title, options)
 	local file_path = vim.fn.expand(options.vault_path .. "/" ..
-		options.notes_subdir .. "/" .. filename .. ".md")
+		subdir .. "/" .. filename .. ".md")
 
 	if options.filename_prefix ~= "timestamp" and vim.fn.filereadable(file_path) == 1 then
 		vim.notify("Note already exists, opening: " .. filename, vim.log.levels.INFO)
@@ -76,28 +84,8 @@ end
 function M.create_from_template()
 	local title = vim.fn.input("Note title (optional): ")
 	local options = config.get_current_config()
-
-	local filename = build_filename(title, options)
-	local file_path = vim.fn.expand(options.vault_path .. "/" ..
-		options.notes_subdir .. "/" .. filename .. ".md")
-
-	if options.filename_prefix ~= "timestamp" and vim.fn.filereadable(file_path) == 1 then
-		vim.notify("Note already exists, opening: " .. filename, vim.log.levels.INFO)
-		vim.cmd("edit " .. vim.fn.fnameescape(file_path))
-		return
-	end
-
-	-- Create directory if needed
-	local dir = vim.fn.fnamemodify(file_path, ":h")
-	if vim.fn.isdirectory(dir) == 0 then
-		vim.fn.mkdir(dir, "p")
-	end
-
-	vim.cmd("edit " .. file_path)
-
 	local display_title = title ~= "" and title or "Untitled"
 
-	-- Let user pick a template
 	local ok, fzf = pcall(require, "fzf-lua")
 	if not ok then
 		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
@@ -116,6 +104,24 @@ function M.create_from_template()
 			["default"] = function(selected)
 				if selected and #selected > 0 then
 					local template_name = vim.fn.fnamemodify(selected[1], ":t:r")
+					local subdir = get_subdir(template_name, options)
+					local filename = build_filename(title, options)
+					local file_path = vim.fn.expand(options.vault_path .. "/" ..
+						subdir .. "/" .. filename .. ".md")
+
+					if options.filename_prefix ~= "timestamp" and vim.fn.filereadable(file_path) == 1 then
+						vim.notify("Note already exists, opening: " .. filename, vim.log.levels.INFO)
+						vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+						return
+					end
+
+					local dir = vim.fn.fnamemodify(file_path, ":h")
+					if vim.fn.isdirectory(dir) == 0 then
+						vim.fn.mkdir(dir, "p")
+					end
+
+					vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+
 					local custom_vars = {
 						title = display_title,
 						note_title = display_title,

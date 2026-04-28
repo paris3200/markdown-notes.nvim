@@ -273,6 +273,15 @@ require("markdown-notes").setup({
   -- Template settings
   default_template = "basic", -- Auto-apply this template to new notes
 
+  -- Route notes to specific subdirectories based on the template used.
+  -- Key: template name (without .md extension), Value: subdir relative to vault_path.
+  -- Falls back to notes_subdir when no match is found.
+  template_dirs = {
+    ["private"]  = "private",        -- <leader>nc → pick "private"  → vault/private/
+    ["meeting"]  = "work/meetings",  -- <leader>nc → pick "meeting"  → vault/work/meetings/
+    ["journal"]  = "journal",        -- <leader>nc → pick "journal"  → vault/journal/
+  },
+
   -- Filename behavior
   -- "none" (default): use title slug only (e.g. my-note.md); opens existing note on collision
   -- "timestamp": prepend unix timestamp (e.g. 1720094400-my-note.md) for guaranteed uniqueness
@@ -370,18 +379,45 @@ require("markdown-notes").setup_workspace("research", {
 - **Persistent context**: All commands use the active workspace until you switch
 - **Independent settings**: Each workspace has its own paths, templates, and variables
 
+### Template-Based Directory Routing
+
+Use `template_dirs` to automatically place notes in specific subdirectories based on the template chosen with `<leader>nc`. When `default_template` is set, `<leader>nn` respects the same mapping.
+
+```lua
+require("markdown-notes").setup({
+  vault_path = "~/notes",
+  notes_subdir = "notes",        -- default destination
+  default_template = "default",
+  template_dirs = {
+    ["private"]  = "private",        -- stays out of sync/search
+    ["meeting"]  = "work/meetings",
+    ["journal"]  = "journal",
+  },
+})
+```
+
+Directories are created automatically if they don't exist.
+
 ### Directory Structure Example
 
 ```
 ~/notes/                          # Main vault
 ├── templates/                    # Your templates
 │   ├── Daily.md                 # Auto-applied to daily notes
-│   ├── meeting.md               # Meeting template
-│   └── project.md               # Project template
+│   ├── meeting.md               # → work/meetings/
+│   ├── private.md               # → private/
+│   ├── journal.md               # → journal/
+│   └── project.md               # → notes/ (default)
 ├── daily/                       # Daily notes
 │   ├── 2025-01-15.md
 │   └── 2025-01-16.md
-└── notes/                       # Regular notes
+├── private/                     # Private notes (excluded from sync)
+│   └── secret-idea.md
+├── work/meetings/               # Meeting notes
+│   └── team-standup.md
+├── journal/                     # Journal entries
+│   └── 2025-01-15-reflection.md
+└── notes/                       # General notes (default)
     ├── project-ideas.md
     └── learning-resources.md
 ```

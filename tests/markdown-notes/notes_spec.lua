@@ -154,6 +154,113 @@ describe("notes", function()
 		end)
 	end)
 
+	describe("template_dirs routing", function()
+		it("uses notes_subdir when no template_dirs configured", function()
+			local original_input = vim.fn.input
+			vim.fn.input = function() return "My Note" end
+
+			local original_expand = vim.fn.expand
+			vim.fn.expand = function(path)
+				if path:match("^/tmp/test%-vault") then return path end
+				return original_expand(path)
+			end
+
+			local original_filereadable = vim.fn.filereadable
+			vim.fn.filereadable = function() return 0 end
+
+			local original_fnamemodify = vim.fn.fnamemodify
+			vim.fn.fnamemodify = function(path, modifier)
+				if modifier == ":h" then return "/tmp/test-vault/notes" end
+				return original_fnamemodify(path, modifier)
+			end
+
+			local original_isdirectory = vim.fn.isdirectory
+			vim.fn.isdirectory = function() return 1 end
+
+			local opened_file = nil
+			local original_cmd = vim.cmd
+			vim.cmd = function(cmd)
+				if cmd:match("^edit ") then opened_file = cmd:match("^edit (.+)$") end
+			end
+
+			local original_buf_set_lines = vim.api.nvim_buf_set_lines
+			vim.api.nvim_buf_set_lines = function() end
+
+			notes.create_new_note()
+
+			assert.matches("/tmp/test%-vault/notes/", opened_file)
+
+			vim.fn.input = original_input
+			vim.fn.expand = original_expand
+			vim.fn.filereadable = original_filereadable
+			vim.fn.fnamemodify = original_fnamemodify
+			vim.fn.isdirectory = original_isdirectory
+			vim.cmd = original_cmd
+			vim.api.nvim_buf_set_lines = original_buf_set_lines
+		end)
+
+		it("routes create_new_note to template_dirs subdir when default_template matches", function()
+			config.options = {}
+			config.workspaces = {}
+			config.current_active_workspace = nil
+			config.setup({
+				vault_path = "/tmp/test-vault",
+				notes_subdir = "notes",
+				default_template = "private",
+				template_dirs = { ["private"] = "private" },
+			})
+
+			local original_input = vim.fn.input
+			vim.fn.input = function() return "Secret Note" end
+
+			local original_expand = vim.fn.expand
+			vim.fn.expand = function(path)
+				if path:match("^/tmp/test%-vault") then return path end
+				return original_expand(path)
+			end
+
+			local original_filereadable = vim.fn.filereadable
+			vim.fn.filereadable = function() return 0 end
+
+			local original_fnamemodify = vim.fn.fnamemodify
+			vim.fn.fnamemodify = function(path, modifier)
+				if modifier == ":h" then return "/tmp/test-vault/private" end
+				return original_fnamemodify(path, modifier)
+			end
+
+			local original_isdirectory = vim.fn.isdirectory
+			vim.fn.isdirectory = function() return 1 end
+
+			local opened_file = nil
+			local original_cmd = vim.cmd
+			vim.cmd = function(cmd)
+				if cmd:match("^edit ") then opened_file = cmd:match("^edit (.+)$") end
+			end
+
+			local original_buf_set_lines = vim.api.nvim_buf_set_lines
+			vim.api.nvim_buf_set_lines = function() end
+
+			-- Stub apply_template_to_file so default_template branch runs
+			local templates = require("markdown-notes.templates")
+			local original_apply = templates.apply_template_to_file
+			templates.apply_template_to_file = function() return true end
+
+			notes.create_new_note()
+
+			assert.matches("/tmp/test%-vault/private/", opened_file)
+			assert.matches("secret%-note%.md$", opened_file)
+
+			vim.fn.input = original_input
+			vim.fn.expand = original_expand
+			vim.fn.filereadable = original_filereadable
+			vim.fn.fnamemodify = original_fnamemodify
+			vim.fn.isdirectory = original_isdirectory
+			vim.cmd = original_cmd
+			vim.api.nvim_buf_set_lines = original_buf_set_lines
+			templates.apply_template_to_file = original_apply
+		end)
+	end)
+
 	describe("workspace integration", function()
 		it("uses workspace-specific vault path", function()
 			-- Set up workspace

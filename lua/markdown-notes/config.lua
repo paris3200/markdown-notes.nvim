@@ -9,6 +9,8 @@ M.defaults = {
 	default_template = nil, -- Optional default template for new notes
 	-- "none": use title slug only; "timestamp": prepend unix timestamp (legacy)
 	filename_prefix = "none",
+	-- Maps template name -> subdirectory (relative to vault_path) for template-based routing
+	template_dirs = {},
 
 	-- Template substitution variables
 	template_vars = {

@@ -159,6 +159,16 @@ Daily notes are the heart of many note-taking workflows. Start your day by creat
 
 If you have a `Daily.md` template, it will be automatically applied. Otherwise, a basic note with frontmatter is created.
 
+To generate daily notes with your own script instead (e.g. to pull in calendar events or weather), set `daily_note_command`. It runs only when the note doesn't exist yet, and `{{date}}` in any argument is replaced with the note's date:
+
+```lua
+daily_note_command = { "~/notes/scripts/make-daily.sh", "--date", "{{date}}" },
+```
+
+To keep daily notes in per-year folders, put `{{year}}` in `dailies_path` (e.g. `"~/notes/daily/{{year}}"`). It's filled in from each note's own date, so yesterday's note on January 1 still goes in last year's folder.
+
+The command must create the note at `dailies_path/YYYY-MM-DD.md`. If it fails or doesn't create the file, you get a warning and the `Daily.md` template is used instead.
+
 ### Weekly Notes and Reviews
 
 Weekly notes help you plan and review your week at a higher level. They use ISO week numbers for consistency:
@@ -286,6 +296,10 @@ require("markdown-notes").setup({
   -- "none" (default): use title slug only (e.g. my-note.md); opens existing note on collision
   -- "timestamp": prepend unix timestamp (e.g. 1720094400-my-note.md) for guaranteed uniqueness
   filename_prefix = "none",
+
+  -- Command that creates missing daily notes ({{date}} → YYYY-MM-DD).
+  -- Falls back to the Daily.md template if it fails.
+  daily_note_command = nil, -- e.g. { "~/notes/scripts/make-daily.sh", "--date", "{{date}}" }
   
   -- UI behavior
   ui = {

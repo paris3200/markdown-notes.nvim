@@ -11,6 +11,10 @@ M.defaults = {
 	filename_prefix = "none",
 	-- Maps template name -> subdirectory (relative to vault_path) for template-based routing
 	template_dirs = {},
+	-- Optional command that creates a missing daily note, as a list of args.
+	-- "{{date}}" in any arg is replaced with the note's date (YYYY-MM-DD).
+	-- Falls back to the Daily.md template if the command fails.
+	daily_note_command = nil,
 
 	-- Template substitution variables
 	template_vars = {

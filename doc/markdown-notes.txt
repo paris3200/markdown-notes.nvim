@@ -245,6 +245,10 @@ Templates and Tags~
 Workspaces~
 `<leader>nw`        Pick workspace
 
+Tasks~
+`<leader>nx`        Toggle checkbox on current line (or each line in a
+                    visual selection)
+
 Note: All keybindings can be customized in your configuration.
 
 ==============================================================================
@@ -315,6 +319,7 @@ Custom Configuration Options~
         show_backlinks = "<leader>nb",
         follow_link = "gf",
         rename_note = "<leader>nr",
+        toggle_checkbox = "<leader>nx",
       },
     })
 <
@@ -537,6 +542,12 @@ require("markdown-notes.links").rename_note(new_name, opts)  *markdown-notes.ren
     formats. Shows file preview with affected files by default, or simple
     confirmation if ui.show_rename_preview is false. Optional {opts} table
     accepts skip_ui boolean for programmatic usage.
+
+require("markdown-notes.tasks").toggle_checkbox(start_line, end_line)  *markdown-notes.toggle_checkbox*
+    Toggle task checkboxes (`- [ ]` <-> `- [x]`) on lines {start_line} to
+    {end_line}. Works with `-`, `*`, `+` and numbered list items at any
+    indentation. With no arguments, uses the current line, or the visual
+    selection in visual mode. Lines without a checkbox are left unchanged.
 
 require("markdown-notes.templates").pick_template()  *markdown-notes.pick_template*
     Pick and insert a template at cursor position.

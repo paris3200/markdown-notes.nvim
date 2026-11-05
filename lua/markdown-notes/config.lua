@@ -89,6 +89,7 @@ M.defaults = {
 		follow_link = "gf",
 		rename_note = "<leader>nr",
 		pick_workspace = "<leader>nw",
+		toggle_checkbox = "<leader>nx",
 	},
 }
 

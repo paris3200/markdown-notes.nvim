@@ -5,6 +5,7 @@ local weekly = require("markdown-notes.weekly")
 local notes = require("markdown-notes.notes")
 local links = require("markdown-notes.links")
 local workspace = require("markdown-notes.workspace")
+local tasks = require("markdown-notes.tasks")
 
 local M = {}
 
@@ -93,6 +94,9 @@ function M.setup_keymaps()
 
 	-- Tags
 	map("n", "search_tags", notes.search_tags, "Search tags")
+
+	-- Tasks
+	map({ "n", "x" }, "toggle_checkbox", tasks.toggle_checkbox, "Toggle checkbox")
 
 	-- Workspaces
 	map("n", "pick_workspace", workspace.pick_workspace, "Pick workspace")

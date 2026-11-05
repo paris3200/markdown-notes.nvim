@@ -55,5 +55,6 @@ markdown-notes.setup	markdown-notes.txt	/*markdown-notes.setup*
 markdown-notes.setup_workspace	markdown-notes.txt	/*markdown-notes.setup_workspace*
 markdown-notes.show_backlinks	markdown-notes.txt	/*markdown-notes.show_backlinks*
 markdown-notes.templates	markdown-notes.txt	/*markdown-notes.templates*
+markdown-notes.toggle_checkbox	markdown-notes.txt	/*markdown-notes.toggle_checkbox*
 markdown-notes.txt	markdown-notes.txt	/*markdown-notes.txt*
 markdown-notes.workspace	markdown-notes.txt	/*markdown-notes.workspace*

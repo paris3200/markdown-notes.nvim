@@ -143,6 +143,7 @@ All keybindings use `<leader>n` as the prefix for easy discovery:
 | `<leader>nb` | Show backlinks | Show notes linking to current note |
 | `<leader>nr` | Rename note | Rename note and update all references with preview |
 | `<leader>nw` | Pick workspace | Switch between workspaces |
+| `<leader>nx` | Toggle checkbox | Toggle `- [ ]` / `- [x]` on the current line or visual selection |
 | `gf` | Follow link | Follow link under cursor |
 
 > **💡 Tip:** All keybindings can be customized in your configuration.
@@ -348,6 +349,7 @@ require("markdown-notes").setup({
     follow_link = "gf",
     rename_note = "<leader>nr",
     pick_workspace = "<leader>nw",
+    toggle_checkbox = "<leader>nx",
   },
 })
 ```

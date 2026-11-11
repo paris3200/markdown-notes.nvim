@@ -64,7 +64,8 @@ function M.follow_link()
 			-- Extract only the filename part if there's a pipe separator for display text
 			local pipe_pos = link_text:find("|")
 			if pipe_pos then
-				link_text = link_text:sub(1, pipe_pos - 1)
+				-- Drop the backslash from a table-escaped pipe: [[note\|Title]]
+				link_text = link_text:sub(1, pipe_pos - 1):gsub("\\$", "")
 			end
 			local file_path = vim.fn.expand(options.vault_path .. "/" .. link_text .. ".md")
 
@@ -137,7 +138,7 @@ function M.show_backlinks()
 		end
 
 		-- Also check for links with display text (|)
-		local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "|"
+		local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "\\?|"
 		if content_str:find(link_with_display) then
 			table.insert(linked_files, file)
 		end
@@ -215,7 +216,7 @@ function M.rename_note(new_name, opts)
 
 	-- Find all files that link to this note
 	local search_text = "[[" .. relative_path .. "]]"
-	local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "|"
+	local link_with_display = "%[%[" .. vim.pesc(relative_path) .. "\\?|"
 
 	-- Get all markdown files
 	local all_files_cmd = "cd " .. vim.fn.shellescape(vault_path) .. " && find . -name '*.md' -type f -not -path '*/.*'"
@@ -333,7 +334,7 @@ function M._perform_rename(current_path, new_file_path, files_to_update, relativ
 		content_str = content_str:gsub(vim.pesc(old_link), new_link)
 
 		-- Replace display text links
-		local old_display_pattern = "(%[%[)" .. vim.pesc(relative_path) .. "(%|[^%]]*%]%])"
+		local old_display_pattern = "(%[%[)" .. vim.pesc(relative_path) .. "(\\?%|[^%]]*%]%])"
 		local new_display_replacement = "%1" .. new_relative_path .. "%2"
 		content_str = content_str:gsub(old_display_pattern, new_display_replacement)
 

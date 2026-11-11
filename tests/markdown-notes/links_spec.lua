@@ -118,6 +118,21 @@ describe("links", function()
 			assert.is_nil(content_str:find("[[technical-doc|Technical Docs]]", 1, true))
 		end)
 
+		it("updates table-escaped display text links", function()
+			local note_path = vault_path .. "/technical-doc.md"
+			local linking_note_path = vault_path .. "/index.md"
+
+			vim.fn.writefile({ "# Technical Documentation", "Content here" }, note_path)
+			vim.fn.writefile({ "# Index", "| Doc | Notes |", "| [[technical-doc\\|Technical Docs]] | x |" }, linking_note_path)
+
+			vim.cmd("edit " .. note_path)
+			links.rename_note("tech-guide", { skip_ui = true })
+
+			local content_str = table.concat(vim.fn.readfile(linking_note_path), "\n")
+			assert.is_not_nil(content_str:find("[[tech-guide\\|Technical Docs]]", 1, true))
+			assert.is_nil(content_str:find("[[technical-doc", 1, true))
+		end)
+
 		it("handles multiple files with different link types", function()
 			-- Create the note to be renamed
 			local note_path = vault_path .. "/main-topic.md"
@@ -475,6 +490,21 @@ describe("links", function()
 			-- Check that we're now in the target file
 			local current_file = vim.fn.expand("%:p")
 			assert.are.equal(target_path, current_file)
+		end)
+
+		it("follows table-escaped wikilinks with display text", function()
+			local target_path = vault_path .. "/long-filename.md"
+			vim.fn.writefile({ "# Long Filename", "This is the target" }, target_path)
+
+			local source_path = vault_path .. "/source-note.md"
+			vim.fn.writefile({ "| [[long-filename\\|Short Title]] | x |" }, source_path)
+
+			vim.cmd("edit " .. source_path)
+			vim.api.nvim_win_set_cursor(0, { 1, 6 })
+
+			links.follow_link()
+
+			assert.are.equal(target_path, vim.fn.expand("%:p"))
 		end)
 
 		it("follows wikilinks with path and pipe separator", function()

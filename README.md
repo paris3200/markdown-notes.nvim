@@ -223,7 +223,7 @@ gf          →  Follow the link under cursor
 **Smart Renaming**: When you rename a note that has links pointing to it, markdown-notes.nvim will:
 1. Show you a preview of all files that will be updated
 2. Let you browse through them with fzf-lua
-3. Update all `[[note-name]]` and `[[note-name|display text]]` references automatically
+3. Update all `[[note-name]]` and `[[note-name|display text]]` references automatically, including table-escaped `[[note-name\|display text]]`
 4. Handle files in subdirectories correctly
 
 > **💡 Tip:** You can disable the preview and use a simple confirmation dialog by setting `ui.show_rename_preview = false` in your configuration.

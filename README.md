@@ -53,7 +53,7 @@ That's it! You're ready to start building your knowledge base.
 - **📅 Daily Notes** - Quick creation and navigation with automatic templating
 - **📆 Weekly Notes** - ISO week-based notes for weekly reviews and planning
 - **📝 Template System** - Flexible templates with variable substitution (`{{date}}`, `{{time}}`, `{{title}}`, etc.)
-- **🔗 Wiki-style Links** - Create and follow `[[note-name]]` links between notes
+- **🔗 Wiki-style Links** - Create and follow `[[note-name]]` links between notes; web links (`[text](https://...)` or bare URLs) open in your browser
 - **🔄 Smart Renaming** - Rename notes and automatically update all references with file preview
 - **🔍 Powerful Search** - Find notes by filename or content with syntax highlighting
 - **↩️ Backlinks** - Discover which notes reference the current note
@@ -215,7 +215,7 @@ Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and a
 
 #### Following and Managing Links
 ```
-gf          →  Follow the link under cursor
+gf          →  Follow the link under cursor (web links open in the browser)
 <leader>nb  →  Show all notes that link to current note (backlinks)
 <leader>nr  →  Rename current note and update all references
 ```

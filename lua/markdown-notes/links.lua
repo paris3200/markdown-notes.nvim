@@ -50,6 +50,27 @@ function M.search_and_link()
 	})
 end
 
+-- Return the http(s) URL under the cursor, if any: either a markdown link
+-- [text](url) with the cursor anywhere on it, or a bare URL. col is 0-based.
+function M._url_at(line, col)
+	local pos = col + 1
+
+	for s, url, e in line:gmatch("()%[[^%]]*%]%((https?://[^%s%)]+)%)()") do
+		if pos >= s and pos < e then
+			return url
+		end
+	end
+
+	for s, url, e in line:gmatch("()(https?://[^%s<>\"]+)()") do
+		if pos >= s and pos < e then
+			-- Drop trailing punctuation that ends the sentence, not the URL
+			return (url:gsub("[%.,;:!%?%)%]]+$", ""))
+		end
+	end
+
+	return nil
+end
+
 function M.follow_link()
 	local line = vim.api.nvim_get_current_line()
 	local col = vim.api.nvim_win_get_cursor(0)[2]
@@ -88,6 +109,17 @@ function M.follow_link()
 			end
 			return
 		end
+	end
+
+	-- Web links open with the system handler
+	local url = M._url_at(line, col)
+	if url then
+		if vim.ui.open then
+			vim.ui.open(url)
+		else
+			vim.notify("Opening URLs requires Neovim 0.10+", vim.log.levels.WARN)
+		end
+		return
 	end
 
 	-- Fallback to default gf behavior

@@ -450,6 +450,57 @@ describe("links", function()
 	end)
 
 	describe("follow_link", function()
+		describe("URLs", function()
+			local original_open
+			local opened
+
+			before_each(function()
+				original_open = vim.ui.open
+				opened = nil
+				vim.ui.open = function(url)
+					opened = url
+				end
+			end)
+
+			after_each(function()
+				vim.ui.open = original_open
+			end)
+
+			local function follow_on(line, col)
+				local source_path = vault_path .. "/source-note.md"
+				vim.fn.writefile({ line }, source_path)
+				vim.cmd("edit! " .. source_path)
+				vim.api.nvim_win_set_cursor(0, { 1, col })
+				links.follow_link()
+			end
+
+			it("opens a markdown link from its text", function()
+				follow_on("See [Barbacoa](https://example.com/r/barbacoa), tonight", 6)
+				assert.are.equal("https://example.com/r/barbacoa", opened)
+			end)
+
+			it("opens a markdown link from its URL", function()
+				follow_on("See [Barbacoa](https://example.com/r/barbacoa), tonight", 25)
+				assert.are.equal("https://example.com/r/barbacoa", opened)
+			end)
+
+			it("picks the link under the cursor when a line has several", function()
+				local line = "[A](https://a.example/one) and [B](https://b.example/two)."
+				follow_on(line, line:find("%[B") - 1)
+				assert.are.equal("https://b.example/two", opened)
+			end)
+
+			it("opens a bare URL without trailing punctuation", function()
+				follow_on("Recipe at https://example.com/r/kofta.", 15)
+				assert.are.equal("https://example.com/r/kofta", opened)
+			end)
+
+			it("does not open anything when the cursor is off the link", function()
+				pcall(follow_on, "See [Barbacoa](https://example.com/r/barbacoa), tonight", 0)
+				assert.is_nil(opened)
+			end)
+		end)
+
 		it("follows simple wikilinks", function()
 			-- Create target note
 			local target_path = vault_path .. "/target-note.md"

@@ -41,7 +41,8 @@ Core Features~
 Advanced Features~
 - Multi-Workspace Support - Manage multiple independent note vaults
 - Tag Management - Search and organize by frontmatter tags
-- High Performance - Built for speed with fuzzy finding via fzf-lua
+- High Performance - Built for speed with fuzzy finding via fzf-lua or
+  snacks.nvim
 - Highly Configurable - Customize paths, keybindings, and behavior
 
 ==============================================================================
@@ -73,7 +74,28 @@ That's it! You're ready to start building your knowledge base.
 REQUIREMENTS                                        *markdown-notes-requirements*
 
 - Neovim >= 0.8.0
-- fzf-lua (https://github.com/ibhagwan/fzf-lua) - Required for fuzzy finding
+- A fuzzy picker, either of:
+  - fzf-lua (https://github.com/ibhagwan/fzf-lua) (default)
+  - snacks.nvim (https://github.com/folke/snacks.nvim) picker
+
+                                                        *markdown-notes-picker*
+The backend is chosen with the `picker` option passed to setup():
+  "auto"    (default) fzf-lua if installed, otherwise snacks.nvim
+  "fzf"     always use fzf-lua
+  "snacks"  always use the snacks.nvim picker (`Snacks.picker`)
+If the selected picker is not installed, an error names the missing plugin.
+The option is global; it is not read from |markdown-notes-workspaces|.
+
+Using snacks.nvim with lazy.nvim: >
+    {
+      "paris3200/markdown-notes.nvim",
+      dependencies = { "folke/snacks.nvim" },
+      opts = { picker = "snacks" },
+    }
+<
+Differences between backends:
+- Search notes (`<leader>ns`): fzf-lua asks for a search term first, then
+  lets you filter the matches; snacks.nvim greps live as you type.
 
 ==============================================================================
 INSTALLATION                                        *markdown-notes-installation*
@@ -179,7 +201,7 @@ Smart Renaming~
                                           *markdown-notes-usage-smart-renaming*
 When you rename a note that has links pointing to it, markdown-notes.nvim will:
 1. Show you a preview of all files that will be updated
-2. Let you browse through them with fzf-lua and file preview
+2. Let you browse through them in the picker with file preview
 3. Update all `[[note-name]]` and `[[note-name|display text]]` references
    (including table-escaped `[[note-name\|display text]]`)
 4. Handle files in subdirectories correctly
@@ -287,6 +309,10 @@ Custom Configuration Options~
       -- Command that creates missing daily notes ({{date}} -> YYYY-MM-DD).
       -- Falls back to the Daily.md template if it fails.
       daily_note_command = nil,
+
+      -- Fuzzy picker: "auto" (default), "fzf" or "snacks"
+      -- See |markdown-notes-picker|
+      picker = "auto",
 
       -- UI behavior
       ui = {
@@ -565,12 +591,14 @@ TROUBLESHOOTING                                    *markdown-notes-troubleshooti
 Common Issues~
                                                 *markdown-notes-common-issues*
 
-"fzf-lua not found" Error~
-Solution: Install fzf-lua dependency: >
+"picker 'fzf' requires fzf-lua" / "no picker found" Error~
+Solution: Install the picker named in the error, or set `picker` to the one
+you have (see |markdown-notes-picker|): >
     -- lazy.nvim
-    dependencies = { "ibhagwan/fzf-lua" }
+    dependencies = { "ibhagwan/fzf-lua" }   -- picker = "fzf"
+    dependencies = { "folke/snacks.nvim" }  -- picker = "snacks"
 
-    -- packer.nvim  
+    -- packer.nvim
     requires = { "ibhagwan/fzf-lua" }
 <
 
@@ -589,7 +617,7 @@ Performance Issues with Large Vaults~
 Solutions:
 - Use `.gitignore` to exclude non-note files from searches
 - Consider splitting large vaults into multiple workspaces
-- Ensure fzf-lua is properly configured
+- Ensure your picker (fzf-lua or snacks.nvim) is properly configured
 
 Debug Information~
                                                 *markdown-notes-debug-info*

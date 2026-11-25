@@ -186,9 +186,7 @@ Finding and Searching: >
 Working with Links~
                                                 *markdown-notes-usage-links*
 Creating Links Between Notes: >
-    <leader>nl  →  Search for a note and insert [[wiki-link]]
-                   Press Ctrl+L to just insert the link
-                   Press Enter to open the note
+    <leader>nl  →  Search for a note; Enter inserts a [[wiki-link]] at the cursor
 <
 
 Following and Managing Links: >
@@ -556,7 +554,7 @@ require("markdown-notes.daily").open_daily_note(offset)  *markdown-notes.open_da
     -1 = yesterday, 1 = tomorrow).
 
 require("markdown-notes.links").search_and_link()  *markdown-notes.search_and_link*
-    Search for a note and insert a wiki-style link.
+    Search for a note; <CR> inserts a wiki-style link at the cursor.
 
 require("markdown-notes.links").follow_link()      *markdown-notes.follow_link*
     Follow the wiki-style link under cursor. If the cursor is on a web link,

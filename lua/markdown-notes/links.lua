@@ -26,11 +26,7 @@ function M.search_and_link()
 		title = "Link to Note",
 		cwd = vim.fn.expand(options.vault_path),
 		actions = {
-			["default"] = function(selected)
-				local file_path = vim.fn.expand(options.vault_path .. "/" .. selected)
-				vim.cmd("edit " .. vim.fn.fnameescape(file_path))
-			end,
-			["ctrl-l"] = insert_link_at_cursor,
+			["default"] = insert_link_at_cursor,
 		},
 	})
 end

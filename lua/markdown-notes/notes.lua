@@ -1,5 +1,6 @@
 local config = require("markdown-notes.config")
 local templates = require("markdown-notes.templates")
+local picker = require("markdown-notes.picker")
 
 local M = {}
 
@@ -86,24 +87,13 @@ function M.create_from_template()
 	local options = config.get_current_config()
 	local display_title = title ~= "" and title or "Untitled"
 
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
-
-	fzf.files({
-		prompt = "Select Template> ",
+	picker.files({
+		title = "Select Template",
 		cwd = vim.fn.expand(options.templates_path),
-		cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
-		file_icons = false,
-		path_shorten = false,
-		formatter = nil,
-		previewer = "builtin",
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local template_name = vim.fn.fnamemodify(selected[1], ":t:r")
+				if selected then
+					local template_name = vim.fn.fnamemodify(selected, ":t:r")
 					local subdir = get_subdir(template_name, options)
 					local filename = build_filename(title, options)
 					local file_path = vim.fn.expand(options.vault_path .. "/" ..
@@ -134,42 +124,24 @@ function M.create_from_template()
 end
 
 function M.find_notes()
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
 	local options = config.get_current_config()
 
-	fzf.files({
-		prompt = "Find Notes> ",
+	picker.files({
+		title = "Find Notes",
 		cwd = vim.fn.expand(options.vault_path),
-		cmd = "find . -name '*.md' -type f -not -path '*/.*' -printf '%P\\n'",
-		previewer = "builtin",
 	})
 end
 
 function M.search_notes()
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
 	local options = config.get_current_config()
 
-	fzf.grep({
-		prompt = "Search Notes> ",
+	picker.grep({
+		title = "Search Notes",
 		cwd = vim.fn.expand(options.vault_path),
-		previewer = "builtin",
 	})
 end
 
 function M.search_tags()
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
 	local options = config.get_current_config()
 
 	local vault_path = vim.fn.expand(options.vault_path)
@@ -230,7 +202,7 @@ function M.search_tags()
 		end
 	end
 
-	-- Convert tags table to list for fzf
+	-- Convert tags table to a list for the picker
 	local tag_list = {}
 	for tag, files in pairs(tags) do
 		table.insert(tag_list, tag .. " (" .. #files .. " files)")
@@ -241,37 +213,33 @@ function M.search_tags()
 		return
 	end
 
-	fzf.fzf_exec(tag_list, {
-		prompt = "Search Tags> ",
+	picker.list(tag_list, {
+		title = "Search Tags",
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local tag = selected[1]:match("^([^%(]+)")
-					tag = tag:gsub("%s+$", "") -- trim trailing whitespace
-					local files_with_tag = tags[tag]
+				local tag = selected:match("^([^%(]+)")
+				tag = tag:gsub("%s+$", "") -- trim trailing whitespace
+				local files_with_tag = tags[tag]
 
-					if files_with_tag and #files_with_tag > 0 then
-						-- Show files with this tag
-						local relative_files = {}
-						for _, file in ipairs(files_with_tag) do
-							local relative = file:gsub("^" .. vim.pesc(vault_path) .. "/", "")
-							table.insert(relative_files, relative)
-						end
-
-						fzf.fzf_exec(relative_files, {
-							prompt = "Files with tag '" .. tag .. "'> ",
-							cwd = vault_path,
-							previewer = "builtin",
-							actions = {
-								["default"] = function(file_selected)
-									if file_selected and #file_selected > 0 then
-										local file_path = vim.fn.expand(vault_path .. "/" .. file_selected[1])
-										vim.cmd("edit " .. vim.fn.fnameescape(file_path))
-									end
-								end,
-							},
-						})
+				if files_with_tag and #files_with_tag > 0 then
+					-- Show files with this tag
+					local relative_files = {}
+					for _, file in ipairs(files_with_tag) do
+						local relative = file:gsub("^" .. vim.pesc(vault_path) .. "/", "")
+						table.insert(relative_files, relative)
 					end
+
+					picker.list(relative_files, {
+						title = "Files with tag '" .. tag .. "'",
+						cwd = vault_path,
+						preview = true,
+						actions = {
+							["default"] = function(file_selected)
+								local file_path = vim.fn.expand(vault_path .. "/" .. file_selected)
+								vim.cmd("edit " .. vim.fn.fnameescape(file_path))
+							end,
+						},
+					})
 				end
 			end,
 		},

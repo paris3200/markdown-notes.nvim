@@ -1,4 +1,5 @@
 local config = require("markdown-notes.config")
+local picker = require("markdown-notes.picker")
 
 local M = {}
 
@@ -19,33 +20,17 @@ local function insert_link_at_cursor(file_path)
 end
 
 function M.search_and_link()
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
 	local options = config.get_current_config()
 
-	fzf.files({
-		prompt = "Link to Note> ",
+	picker.files({
+		title = "Link to Note",
 		cwd = vim.fn.expand(options.vault_path),
-		cmd = "find . -name '*.md' -type f -not -path '*/.*'",
-		file_icons = false,
-		path_shorten = false,
-		formatter = nil,
-		previewer = "builtin",
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local file_path = vim.fn.expand(options.vault_path .. "/" .. selected[1])
-					vim.cmd("edit " .. vim.fn.fnameescape(file_path))
-				end
+				local file_path = vim.fn.expand(options.vault_path .. "/" .. selected)
+				vim.cmd("edit " .. vim.fn.fnameescape(file_path))
 			end,
-			["ctrl-l"] = function(selected)
-				if selected and #selected > 0 then
-					insert_link_at_cursor(selected[1])
-				end
-			end,
+			["ctrl-l"] = insert_link_at_cursor,
 		},
 	})
 end
@@ -140,12 +125,6 @@ function M.show_backlinks()
 		return
 	end
 
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
-
 	-- Find files that contain links to this note
 	local search_text = "[[" .. relative_path .. "]]"
 
@@ -181,22 +160,16 @@ function M.show_backlinks()
 		return
 	end
 
-	fzf.fzf_exec(linked_files, {
-		prompt = "Backlinks> ",
+	picker.list(linked_files, {
+		title = "Backlinks",
 		cwd = vault_path,
-		previewer = "builtin",
+		preview = true,
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local file_path = vim.fn.expand(options.vault_path .. "/" .. selected[1])
-					vim.cmd("edit " .. vim.fn.fnameescape(file_path))
-				end
+				local file_path = vim.fn.expand(options.vault_path .. "/" .. selected)
+				vim.cmd("edit " .. vim.fn.fnameescape(file_path))
 			end,
-			["ctrl-l"] = function(selected)
-				if selected and #selected > 0 then
-					insert_link_at_cursor(selected[1])
-				end
-			end,
+			["ctrl-l"] = insert_link_at_cursor,
 		},
 	})
 end
@@ -297,22 +270,16 @@ function M.rename_note(new_name, opts)
 
 	-- Show affected files and ask for confirmation
 	if #files_to_update > 0 and not opts.skip_ui and options.ui.show_rename_preview then
-		local ok, fzf = pcall(require, "fzf-lua")
-		if not ok then
-			vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-			return
-		end
-
 		-- Show files that will be updated
 		local file_list = {}
 		for _, file_info in ipairs(files_to_update) do
 			table.insert(file_list, file_info.file)
 		end
 
-		fzf.fzf_exec(file_list, {
-			prompt = "Files to update (" .. #files_to_update .. ") - Enter to rename, Esc to cancel > ",
+		picker.list(file_list, {
+			title = "Files to update (" .. #files_to_update .. ") - Enter to rename, Esc to cancel",
 			cwd = vault_path,
-			previewer = "builtin",
+			preview = true,
 			actions = {
 				["default"] = function()
 					-- Proceed with rename directly (preview was the confirmation)

@@ -1,4 +1,5 @@
 local config = require("markdown-notes.config")
+local picker = require("markdown-notes.picker")
 
 local M = {}
 
@@ -70,26 +71,18 @@ function M.pick_workspace()
 		return
 	end
 
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
-
 	local workspace_list = {}
 	for name, workspace in pairs(workspaces) do
 		table.insert(workspace_list, name .. " - " .. workspace.vault_path)
 	end
 
-	fzf.fzf_exec(workspace_list, {
-		prompt = "Select Workspace> ",
+	picker.list(workspace_list, {
+		title = "Select Workspace",
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local workspace_name = selected[1]:match("^([^%-]+)")
-					workspace_name = workspace_name:gsub("%s+$", "") -- trim trailing whitespace
-					M.switch_to_workspace(workspace_name)
-				end
+				local workspace_name = selected:match("^([^%-]+)")
+				workspace_name = workspace_name:gsub("%s+$", "") -- trim trailing whitespace
+				M.switch_to_workspace(workspace_name)
 			end,
 		},
 	})

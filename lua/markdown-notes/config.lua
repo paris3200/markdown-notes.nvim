@@ -15,6 +15,9 @@ M.defaults = {
 	-- "{{date}}" in any arg is replaced with the note's date (YYYY-MM-DD).
 	-- Falls back to the Daily.md template if the command fails.
 	daily_note_command = nil,
+	-- Fuzzy picker backend: "fzf" (fzf-lua), "snacks" (snacks.nvim), or "auto"
+	-- (fzf-lua if installed, otherwise snacks.nvim). Global; set it in setup().
+	picker = "auto",
 
 	-- Template substitution variables
 	template_vars = {

@@ -1,4 +1,5 @@
 local config = require("markdown-notes.config")
+local picker = require("markdown-notes.picker")
 
 local M = {}
 
@@ -73,30 +74,17 @@ function M.apply_template_to_file(template_name, custom_vars)
 end
 
 function M.pick_template()
-	local ok, fzf = pcall(require, "fzf-lua")
-	if not ok then
-		vim.notify("fzf-lua not available", vim.log.levels.ERROR)
-		return
-	end
 	local options = config.get_current_config()
 	if not options then
 		options = config.options
 	end
 
-	fzf.files({
-		prompt = "Select Template> ",
+	picker.files({
+		title = "Select Template",
 		cwd = vim.fn.expand(options.templates_path),
-		cmd = "find . -name '*.md' -type f -not -path '*/.*'",
-		file_icons = false,
-		path_shorten = false,
-		formatter = nil,
-		previewer = "builtin",
 		actions = {
 			["default"] = function(selected)
-				if selected and #selected > 0 then
-					local template_name = vim.fn.fnamemodify(selected[1], ":t:r")
-					M.insert_template(template_name)
-				end
+				M.insert_template(vim.fn.fnamemodify(selected, ":t:r"))
 			end,
 		},
 	})

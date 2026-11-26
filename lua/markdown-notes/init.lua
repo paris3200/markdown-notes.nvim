@@ -141,7 +141,7 @@ function M.setup_keymaps()
 	vim.api.nvim_create_user_command(
 		"MarkdownNotesWorkspacePick",
 		workspace.pick_workspace,
-		{ desc = "Pick workspace with fzf" }
+		{ desc = "Pick workspace" }
 	)
 	vim.api.nvim_create_user_command("MarkdownNotesWorkspaceSwitch", function(opts)
 		workspace.switch_to_workspace(opts.args)

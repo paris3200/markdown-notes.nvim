@@ -82,7 +82,7 @@ The picker is chosen with the `picker` option (see [Custom Configuration Options
 }
 ```
 
-Both backends support file previews, the same file filtering (`*.md`, hidden paths skipped) and `<C-l>` to insert a link. One difference: **Search notes** (`<leader>ns`) with fzf-lua asks for a search term first, while snacks.nvim greps live as you type.
+Both backends support file previews, the same file filtering (`*.md`, hidden paths skipped) and `<C-l>` in the backlinks picker to insert a link. One difference: **Search notes** (`<leader>ns`) with fzf-lua asks for a search term first, while snacks.nvim greps live as you type.
 
 ### Plugin Managers
 
@@ -222,8 +222,7 @@ Weekly notes are created with the format `W{week}-{year}-Weekly-Review.md` and a
 
 #### Creating Links Between Notes
 ```
-<leader>nl  →  Search for a note and insert [[wiki-link]]
-               Press Ctrl+L to just insert the link
+<leader>nl  →  Search for a note; Enter inserts a [[wiki-link]] at the cursor
                Press Enter to open the note
 ```
 
